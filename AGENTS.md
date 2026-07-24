@@ -9,14 +9,14 @@
 # Release (requires signing env vars)
 STORE_FILE=signing-keystore.jks STORE_PASSWORD=... KEY_ALIAS=... KEY_PASSWORD=... ./gradlew assembleRelease
 
-# Run all checks (tests + TODO/FIXME scan + lint)
-./gradlew check lint
+# Run tests and lint
+./gradlew test lint
 ```
 
 ## CI Workflows
 
 - `build-release.yml` — triggered on `v*` tag push. Builds signed release APK, attaches to GitHub Release.
-- `build-check.yml` — triggered on every branch push and PR to `master`. Runs `check` (unit tests + TODO/FIXME/stub scan), `lint`, and `assembleDebug`.
+- `build-check.yml` — triggered on every branch push and PR to `master`. Runs grep stub check, `gradle test`, `gradle lint`, and `gradle assembleDebug`.
 
 ## Code Conventions
 
@@ -50,7 +50,7 @@ STORE_FILE=signing-keystore.jks STORE_PASSWORD=... KEY_ALIAS=... KEY_PASSWORD=..
 ## Testing
 
 - Unit tests: `./gradlew test`
-- TODO/FIXME/stub scan: `./gradlew checkNoTodos` (runs as part of `check`)
+- TODO/FIXME/stub scan: grep step in CI workflow (not a Gradle task)
 - No local emulator testing assumed — all device testing is manual by product owner
 
 ## Anchored Summary

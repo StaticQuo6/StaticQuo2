@@ -29,7 +29,16 @@ jobs:
         with:
           gradle-version: ${{ env.GRADLE_VERSION }}
 
-      - name: Run checks (tests, TODO/FIXME scan, lint)
+      - name: Check for stub markers
+        run: |
+          if grep -rnE "TODO|FIXME|// ?stub|not.?implemented" --include="*.kt" app/src/main/java; then
+            echo "::error::Stub markers found in source marked as complete. See lines above."
+            exit 1
+          else
+            echo "No stub markers found."
+          fi
+
+      - name: Run tests and lint
         run: gradle check lint
 
       - name: Build debug APK
