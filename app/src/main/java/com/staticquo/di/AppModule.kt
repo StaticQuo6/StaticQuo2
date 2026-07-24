@@ -1,7 +1,6 @@
 package com.staticquo.di
 
-import com.lambdapioneer.argon2kt.Argon2Kotlin
-import com.lambdapioneer.argon2kt.Argon2KotlinSettings
+import com.lambdapioneer.argon2kt.Argon2Kt
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,7 +13,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideArgon2(): Argon2Kotlin {
-        return Argon2Kotlin(Argon2KotlinSettings.builder().build())
+    fun provideArgon2(): Argon2Kt {
+        return Argon2Kt()
     }
 }

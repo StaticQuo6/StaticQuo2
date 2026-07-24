@@ -1,6 +1,6 @@
 package com.staticquo.lock
 
-import com.lambdapioneer.argon2kt.Argon2Kotlin
+import com.lambdapioneer.argon2kt.Argon2Kt
 import com.lambdapioneer.argon2kt.Argon2Mode
 import java.security.SecureRandom
 import javax.inject.Inject
@@ -8,7 +8,7 @@ import javax.inject.Singleton
 
 @Singleton
 class PinHashUtil @Inject constructor(
-    private val argon2: Argon2Kotlin
+    private val argon2: Argon2Kt
 ) {
     companion object {
         private const val SALT_LENGTH = 16
@@ -19,34 +19,30 @@ class PinHashUtil @Inject constructor(
     }
 
     data class HashResult(
-        val hash: String,
-        val salt: String
+        val hash: String
     )
 
     fun hash(pin: String): HashResult {
         val salt = ByteArray(SALT_LENGTH).apply {
             SecureRandom().nextBytes(this)
         }
-        val hash = argon2.hash(
-            mode = Argon2Mode.ARGON2ID,
+        val result = argon2.hash(
+            mode = Argon2Mode.ARGON2_ID,
             password = pin.toByteArray(),
             salt = salt,
-            iterations = ITERATIONS,
-            memoryCostInKib = MEMORY_COST_KB,
+            tCostInIterations = ITERATIONS,
+            mCostInKibibyte = MEMORY_COST_KB,
             parallelism = PARALLELISM,
             hashLengthInBytes = HASH_LENGTH
         )
-        return HashResult(
-            hash = hash.encodedHash,
-            salt = hash.encodedSalt
-        )
+        return HashResult(hash = result.encodedOutputAsString())
     }
 
     fun verify(pin: String, encodedHash: String): Boolean {
         return try {
             argon2.verify(
-                mode = Argon2Mode.ARGON2ID,
-                encodedHash = encodedHash,
+                mode = Argon2Mode.ARGON2_ID,
+                encoded = encodedHash,
                 password = pin.toByteArray()
             )
         } catch (_: Exception) {
