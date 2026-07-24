@@ -60,9 +60,10 @@ android {
 
 tasks.register("checkNoTodos") {
     doLast {
-        val violations = fileTree("src/main/java")
-            .include("**/*.kt")
-            .flatMap { file: java.io.File ->
+        val javaDir = file("src/main/java")
+        val violations = javaDir.walkTopDown()
+            .filter { it.extension == "kt" }
+            .flatMap { file ->
                 file.readLines()
                     .mapIndexedNotNull { index, line ->
                         if (line.contains(Regex("\\b(TODO|FIXME|stub|STUB|todo|fixme)\\b")) &&
