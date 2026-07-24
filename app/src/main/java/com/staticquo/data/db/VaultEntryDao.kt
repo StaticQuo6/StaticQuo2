@@ -19,4 +19,7 @@ interface VaultEntryDao {
 
     @Query("DELETE FROM vault_entries WHERE id = :id")
     suspend fun delete(id: Long)
+
+    @Query("DELETE FROM vault_entries")
+    suspend fun clearAll()
 }

@@ -28,7 +28,8 @@ enum class PinScreen {
 
 @HiltViewModel
 class PinViewModel @Inject constructor(
-    private val repository: PinRepository
+    private val repository: PinRepository,
+    private val duressWipe: DuressWipeManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PinUiState())
@@ -105,6 +106,7 @@ class PinViewModel @Inject constructor(
                         screen = PinScreen.MAIN_APP,
                         duressTriggered = true
                     )
+                    viewModelScope.launch { duressWipe.performWipe() }
                 }
                 PinRepository.PinResult.INCORRECT -> {
                     val attempts = repository.getFailedAttempts()

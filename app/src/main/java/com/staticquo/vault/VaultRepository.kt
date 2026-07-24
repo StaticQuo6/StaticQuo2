@@ -122,4 +122,18 @@ class VaultRepository @Inject constructor(
             VaultResult.Error("Failed to delete entry: ${e.message}")
         }
     }
+
+    suspend fun wipeAll(): VaultResult<Unit> {
+        return try {
+            val entries = dao.getAll()
+            for (entry in entries) {
+                File(entry.encryptedFilePath).delete()
+            }
+            vaultDir().deleteRecursively()
+            dao.clearAll()
+            VaultResult.Success(Unit)
+        } catch (e: Exception) {
+            VaultResult.Error("Failed to wipe vault: ${e.message}")
+        }
+    }
 }
