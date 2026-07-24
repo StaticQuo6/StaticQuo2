@@ -21,3 +21,15 @@
 - Map region metadata stored in Room database
 - Location permission request and GPS coordinate display
 - Build tool: `tools/generate_demo_tiles.py` for producing .mbtiles files
+
+## v1.2.0 — Phase 3: Encrypted Local Vault
+
+- Tink AES256-GCM encryption with keys stored in Android Keystore
+- VaultEntry Room table for encrypted item metadata
+- Create encrypted text notes (AES-256-GCM, files stored in app-internal storage)
+- View decrypted notes on demand
+- Delete vault entries (removes both DB row and encrypted file)
+- Vault tab in bottom navigation (Map / Vault / Settings)
+- `VaultEncryptionManager` — sealed result type for all crypto operations (no silent failures)
+- `VaultRepository` — sealed `VaultResult` for all I/O operations
+- Auto-generated encryption keyset persisted via `AndroidKeysetManager` in SharedPreferences
