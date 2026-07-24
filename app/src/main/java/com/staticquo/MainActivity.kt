@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Settings
@@ -25,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.sp
+import com.staticquo.mesh.MeshScreen
 import com.staticquo.lock.LockGate
 import com.staticquo.maps.MapScreen
 import com.staticquo.settings.DownloadMapsScreen
@@ -52,6 +54,7 @@ data class NavTab(
 
 private val tabs = listOf(
     NavTab("Map", Icons.Default.Map),
+    NavTab("Mesh", Icons.Default.Bluetooth),
     NavTab("Vault", Icons.Default.Lock),
     NavTab("Settings", Icons.Default.Settings)
 )
@@ -104,8 +107,9 @@ private fun MainNavigation() {
         ) {
             when (selectedTab) {
                 0 -> MapScreen()
-                1 -> VaultScreen()
-                2 -> SettingsScreen(
+                1 -> MeshScreen()
+                2 -> VaultScreen()
+                3 -> SettingsScreen(
                     onNavigateToDownloadMaps = { showDownloadMaps = true }
                 )
             }

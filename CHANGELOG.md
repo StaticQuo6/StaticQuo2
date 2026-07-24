@@ -33,3 +33,14 @@
 - `VaultEncryptionManager` — sealed result type for all crypto operations (no silent failures)
 - `VaultRepository` — sealed `VaultResult` for all I/O operations
 - Auto-generated encryption keyset persisted via `AndroidKeysetManager` in SharedPreferences
+
+## v1.3.0 — Phase 4: BLE Mesh Engine
+
+- `MeshAdvertiser` — BLE peripheral mode: custom service UUID advertising with `BluetoothLeAdvertiser`
+- `MeshScanner` — BLE central mode: scanning for nearby StaticQuo peers by device name prefix
+- `MeshGattServer` — GATT server with message-write characteristic, incoming message parsing via JSON
+- `MeshGattClient` — GATT client, connects to peers, discovers mesh service, writes outgoing messages
+- `MeshRepository` — coordinates all BLE components; sealed `MeshInitResult` (Success / PermissionsDenied / BluetoothNotAvailable / Error)
+- `MeshMessage` — data model with sender, content, timestamp, hop-count TTL (store-and-forward up to 5 hops)
+- Device identity: stable node ID from `ANDROID_ID`, visible as `StaticQuo-{id}` in BLE scans
+- Mesh tab in bottom navigation (Map / Mesh / Vault / Settings)
