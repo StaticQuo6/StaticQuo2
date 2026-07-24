@@ -37,7 +37,7 @@ STORE_FILE=signing-keystore.jks STORE_PASSWORD=... KEY_ALIAS=... KEY_PASSWORD=..
 - `com.staticquo.maps` — offline map rendering & routing (MapLibre 11.1.0, .mbtiles via filesystem)
 - `com.staticquo.heatmap` — needs/medic beacon overlay (5 beacon types: MEDIC, NEED, SUPPLY, SAFEZONE, DANGER; placed via tap on map; filtered by type; persisted in Room)
 - `com.staticquo.lora` — LoRa radio integration (USB Host API, SX127x-family protocol framing, configurable frequency/SF/BW)
-- `com.staticquo.search` — offline reference search
+- `com.staticquo.search` — offline reference search (Room FTS4, 5 bundled reference docs, prefix matching with wildcards)
 - `com.staticquo.data` — database, repositories
 - `com.staticquo.di` — Hilt modules
 

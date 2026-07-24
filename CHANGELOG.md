@@ -62,3 +62,13 @@
 - Configurable frequency (433/868/915 MHz), spreading factor (SF7–SF12), bandwidth (125/250/500 kHz)
 - `LoRaRepository` — sealed `LoRaResult` for all hardware I/O (connect / send / receive / find device)
 - LoRa tab in bottom navigation (Map / Mesh / Vault / LoRa / Settings)
+
+## v1.6.0 — Phase 7: Offline Reference Search
+
+- Room FTS4 full-text search index (auto-syncs with content table)
+- 5 bundled reference documents: First Aid, Legal Rights, Communication Protocols, Emergency Contacts, De-escalation
+- Automatic indexing from assets on first launch
+- Prefix-matching search query with wildcard expansion
+- Snippet generation with context around match
+- Result detail dialog for full content
+- Search tab in bottom navigation

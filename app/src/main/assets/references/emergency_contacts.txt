@@ -1,0 +1,33 @@
+EMERGENCY CONTACTS
+
+NATIONAL EMERGENCY NUMBERS:
+- Police: [ENTER LOCAL NUMBER]
+- Ambulance: [ENTER LOCAL NUMBER]
+- Fire: [ENTER LOCAL NUMBER]
+
+LEGAL SUPPORT:
+- Lawyer: [ENTER NAME AND NUMBER]
+- Legal Aid: [ENTER NAME AND NUMBER]
+- Bail Fund: [ENTER NAME AND NUMBER]
+
+MEDICAL:
+- Field Medic: [ENTER NAME AND NUMBER]
+- Hospital: [ENTER NAME AND ADDRESS]
+- Pharmacy: [ENTER NAME AND ADDRESS]
+
+TEAM CONTACTS:
+- Team Lead: [ENTER NAME AND NUMBER]
+- Deputy Lead: [ENTER NAME AND NUMBER]
+- Comms Officer: [ENTER NAME AND NUMBER]
+- Medic: [ENTER NAME AND NUMBER]
+
+SAFE LOCATIONS:
+- Primary Safe Zone: [ENTER ADDRESS]
+- Secondary Safe Zone: [ENTER ADDRESS]
+- Rally Point: [ENTER LOCATION]
+
+IMPORTANT:
+- Memorize at least 2 emergency numbers
+- Keep phone charged and on silent
+- Share your location with a trusted contact
+- Establish a check-in schedule

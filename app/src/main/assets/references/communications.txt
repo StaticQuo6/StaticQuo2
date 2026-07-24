@@ -1,0 +1,43 @@
+COMMUNICATION PROTOCOLS
+
+1. MESSAGE PRIORITY
+   - FLASH: Immediate life-threatening emergency
+   - PRIORITY: Urgent but not life-threatening
+   - ROUTINE: Normal communication
+   - WELFARE: Check-in / status update
+
+2. RADIO PROTOCOL
+   - Listen before transmitting
+   - Identify yourself: "This is [callsign]"
+   - Speak clearly and slowly
+   - Use phonetic alphabet for spelling
+   - Acknowledge receipt: "Roger" or "Copy"
+   - End with "Over" (expect reply) or "Out" (end)
+
+3. PHONETIC ALPHABET
+   A=Alpha, B=Bravo, C=Charlie, D=Delta
+   E=Echo, F=Foxtrot, G=Golf, H=Hotel
+   I=India, J=Juliet, K=Kilo, L=Lima
+   M=Mike, N=November, O=Oscar, P=Papa
+   Q=Quebec, R=Romeo, S=Sierra, T=Tango
+   U=Uniform, V=Victor, W=Whiskey, X=X-ray
+   Y=Yankee, Z=Zulu
+
+4. SITUATION REPORTS (SITREP)
+   - Unit/Team identifier
+   - Current location (grid reference or landmark)
+   - Status of personnel (OK, injured, missing)
+   - Resources available
+   - Threats observed
+   - Actions taken
+
+5. EMERGENCY SIGNALS
+   - 3 whistle blasts / 3 flashes: Help needed
+   - 2 whistle blasts / 2 flashes: Come here
+   - 1 whistle blast / 1 flash: OK / Understood
+   - Continuous blasts: Serious emergency
+
+6. MESSAGE RELAY
+   - If message is for another team, prefix: "Relay for [team]"
+   - Confirm receipt before disconnecting
+   - Repeat back critical information

@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.Cable
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +32,7 @@ import com.staticquo.mesh.MeshScreen
 import com.staticquo.lock.LockGate
 import com.staticquo.lora.LoRaScreen
 import com.staticquo.maps.MapScreen
+import com.staticquo.search.SearchScreen
 import com.staticquo.settings.DownloadMapsScreen
 import com.staticquo.settings.SettingsScreen
 import com.staticquo.vault.VaultScreen
@@ -59,6 +61,7 @@ private val tabs = listOf(
     NavTab("Mesh", Icons.Default.Bluetooth),
     NavTab("Vault", Icons.Default.Lock),
     NavTab("LoRa", Icons.Default.Cable),
+    NavTab("Search", Icons.Default.Search),
     NavTab("Settings", Icons.Default.Settings)
 )
 
@@ -108,15 +111,16 @@ private fun MainNavigation() {
                 .padding(padding),
             color = Color(0xFFF5F5F5)
         ) {
-            when (selectedTab) {
-                0 -> MapScreen()
-                1 -> MeshScreen()
-                2 -> VaultScreen()
-                3 -> LoRaScreen()
-                4 -> SettingsScreen(
-                    onNavigateToDownloadMaps = { showDownloadMaps = true }
-                )
-            }
+                when (selectedTab) {
+                    0 -> MapScreen()
+                    1 -> MeshScreen()
+                    2 -> VaultScreen()
+                    3 -> LoRaScreen()
+                    4 -> SearchScreen()
+                    5 -> SettingsScreen(
+                        onNavigateToDownloadMaps = { showDownloadMaps = true }
+                    )
+                }
         }
     }
 }
