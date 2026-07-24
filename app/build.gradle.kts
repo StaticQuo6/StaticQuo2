@@ -73,6 +73,7 @@ tasks.register("checkNoTodos") {
                         } else null
                     }
             }
+            .toList()
         if (violations.isNotEmpty()) {
             throw GradleException(
                 "Found TODO/FIXME/stub markers in completed code:\n${violations.joinToString("\n")}"
