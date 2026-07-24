@@ -33,6 +33,7 @@ import com.staticquo.lock.LockGate
 import com.staticquo.lora.LoRaScreen
 import com.staticquo.maps.MapScreen
 import com.staticquo.search.SearchScreen
+import com.staticquo.backup.BackupScreen
 import com.staticquo.settings.DownloadMapsScreen
 import com.staticquo.settings.SettingsScreen
 import com.staticquo.vault.VaultScreen
@@ -69,9 +70,15 @@ private val tabs = listOf(
 private fun MainNavigation() {
     var selectedTab by rememberSaveable { mutableStateOf(0) }
     var showDownloadMaps by rememberSaveable { mutableStateOf(false) }
+    var showBackup by rememberSaveable { mutableStateOf(false) }
 
     if (showDownloadMaps) {
         DownloadMapsScreen(onBack = { showDownloadMaps = false })
+        return
+    }
+
+    if (showBackup) {
+        BackupScreen(onBack = { showBackup = false })
         return
     }
 
@@ -118,7 +125,8 @@ private fun MainNavigation() {
                     3 -> LoRaScreen()
                     4 -> SearchScreen()
                     5 -> SettingsScreen(
-                        onNavigateToDownloadMaps = { showDownloadMaps = true }
+                        onNavigateToDownloadMaps = { showDownloadMaps = true },
+                        onNavigateToBackup = { showBackup = true }
                     )
                 }
         }

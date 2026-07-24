@@ -24,7 +24,8 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun SettingsScreen(
-    onNavigateToDownloadMaps: () -> Unit
+    onNavigateToDownloadMaps: () -> Unit,
+    onNavigateToBackup: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -53,6 +54,11 @@ fun SettingsScreen(
                 title = "Download Maps",
                 subtitle = "Download offline map regions",
                 onClick = onNavigateToDownloadMaps
+            )
+            SettingsItem(
+                title = "Backup & Restore",
+                subtitle = "WebDAV backup for vault and heatmap data",
+                onClick = onNavigateToBackup
             )
         }
     }
