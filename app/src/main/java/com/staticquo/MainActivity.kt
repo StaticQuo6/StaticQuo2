@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bluetooth
+import androidx.compose.material.icons.filled.Cable
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Settings
@@ -28,6 +29,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.sp
 import com.staticquo.mesh.MeshScreen
 import com.staticquo.lock.LockGate
+import com.staticquo.lora.LoRaScreen
 import com.staticquo.maps.MapScreen
 import com.staticquo.settings.DownloadMapsScreen
 import com.staticquo.settings.SettingsScreen
@@ -56,6 +58,7 @@ private val tabs = listOf(
     NavTab("Map", Icons.Default.Map),
     NavTab("Mesh", Icons.Default.Bluetooth),
     NavTab("Vault", Icons.Default.Lock),
+    NavTab("LoRa", Icons.Default.Cable),
     NavTab("Settings", Icons.Default.Settings)
 )
 
@@ -109,7 +112,8 @@ private fun MainNavigation() {
                 0 -> MapScreen()
                 1 -> MeshScreen()
                 2 -> VaultScreen()
-                3 -> SettingsScreen(
+                3 -> LoRaScreen()
+                4 -> SettingsScreen(
                     onNavigateToDownloadMaps = { showDownloadMaps = true }
                 )
             }

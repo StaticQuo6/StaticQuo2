@@ -53,3 +53,12 @@
 - Layer toggle to show/hide beacons on map
 - Legend drawer with filter by beacon type
 - Beacon type selector dialog with color-coded type dropdown
+
+## v1.5.0 — Phase 6: LoRa Radio Integration
+
+- USB Host API integration for LoRa radio modules (SX127x-family via USB-to-UART)
+- `LoRaSerialDevice` — raw USB bulk-transfer serial communication, no external dependencies
+- Packet framing protocol with start/end bytes, length prefix, CRC check
+- Configurable frequency (433/868/915 MHz), spreading factor (SF7–SF12), bandwidth (125/250/500 kHz)
+- `LoRaRepository` — sealed `LoRaResult` for all hardware I/O (connect / send / receive / find device)
+- LoRa tab in bottom navigation (Map / Mesh / Vault / LoRa / Settings)

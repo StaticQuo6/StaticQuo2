@@ -14,6 +14,9 @@
 
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
 
+    <!-- LoRa USB serial -->
+    <uses-feature android:name="android.hardware.usb.host" android:required="false" />
+
     <application
         android:name=".StaticQuoApp"
         android:allowBackup="false"
