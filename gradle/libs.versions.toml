@@ -50,6 +50,9 @@ tink-android = { group = "com.google.crypto.tink", name = "tink-android", versio
 # MapLibre
 maplibre-sdk = { group = "org.maplibre.gl", name = "android-sdk", version = "11.1.0" }
 
+# Valhalla Routing
+valhalla-mobile = { group = "io.github.rallista", name = "valhalla-mobile", version = "0.5.1" }
+
 # Location
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version = "21.3.0" }
 

@@ -7,6 +7,7 @@ import com.staticquo.data.db.AppLockDao
 import com.staticquo.data.db.MapRegionDao
 import com.staticquo.data.db.VaultEntryDao
 import com.staticquo.heatmap.HeatmapDao
+import com.staticquo.routing.RoutingDao
 import com.staticquo.search.SearchDao
 import dagger.Module
 import dagger.Provides
@@ -39,6 +40,9 @@ object DatabaseModule {
 
     @Provides
     fun provideHeatmapDao(db: AppDatabase): HeatmapDao = db.heatmapDao()
+
+    @Provides
+    fun provideRoutingDao(db: AppDatabase): RoutingDao = db.routingDao()
 
     @Provides
     fun provideSearchDao(db: AppDatabase): SearchDao = db.searchDao()
