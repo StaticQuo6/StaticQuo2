@@ -6,6 +6,7 @@ import com.staticquo.data.db.AppDatabase
 import com.staticquo.data.db.AppLockDao
 import com.staticquo.data.db.MapRegionDao
 import com.staticquo.data.db.VaultEntryDao
+import com.staticquo.heatmap.HeatmapDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,4 +35,7 @@ object DatabaseModule {
 
     @Provides
     fun provideVaultEntryDao(db: AppDatabase): VaultEntryDao = db.vaultEntryDao()
+
+    @Provides
+    fun provideHeatmapDao(db: AppDatabase): HeatmapDao = db.heatmapDao()
 }

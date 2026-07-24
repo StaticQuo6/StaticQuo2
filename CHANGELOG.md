@@ -44,3 +44,12 @@
 - `MeshMessage` — data model with sender, content, timestamp, hop-count TTL (store-and-forward up to 5 hops)
 - Device identity: stable node ID from `ANDROID_ID`, visible as `StaticQuo-{id}` in BLE scans
 - Mesh tab in bottom navigation (Map / Mesh / Vault / Settings)
+
+## v1.4.0 — Phase 5: Heatmap / Beacon Overlay
+
+- 5 beacon types: MEDIC (red), NEED (amber), SUPPLY (green), SAFEZONE (blue), DANGER (red)
+- Tap on offline map to place a beacon at that location
+- All beacons persisted in Room (`heatmap_beacons` table)
+- Layer toggle to show/hide beacons on map
+- Legend drawer with filter by beacon type
+- Beacon type selector dialog with color-coded type dropdown

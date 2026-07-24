@@ -35,7 +35,7 @@ STORE_FILE=signing-keystore.jks STORE_PASSWORD=... KEY_ALIAS=... KEY_PASSWORD=..
 - `com.staticquo.vault` — encrypted local storage (Tink AES256-GCM, keys in Android Keystore, sealed result types for all crypto/I/O)
 - `com.staticquo.mesh` — BLE/Wi-Fi mesh engine (permission-first init, checks BLE hardware + runtime perms before starting; components: MeshScanner, MeshAdvertiser, MeshGattServer, MeshGattClient; GATT-based message exchange over custom UUID; store-and-forward with hop-count TTL)
 - `com.staticquo.maps` — offline map rendering & routing (MapLibre 11.1.0, .mbtiles via filesystem)
-- `com.staticquo.heatmap` — needs/medic beacon overlay
+- `com.staticquo.heatmap` — needs/medic beacon overlay (5 beacon types: MEDIC, NEED, SUPPLY, SAFEZONE, DANGER; placed via tap on map; filtered by type; persisted in Room)
 - `com.staticquo.lora` — LoRa radio integration
 - `com.staticquo.search` — offline reference search
 - `com.staticquo.data` — database, repositories
