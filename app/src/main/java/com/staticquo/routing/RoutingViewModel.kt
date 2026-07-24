@@ -30,6 +30,7 @@ class RoutingViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            repository.installDemoIfNeeded()
             _uiState.value = _uiState.value.copy(hasTiles = repository.hasTiles())
         }
     }

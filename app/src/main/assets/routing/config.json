@@ -1,0 +1,23 @@
+{
+  "mjolnir": {
+    "tile_extract": "",
+    "tile_dir": ""
+  },
+  "loki": {
+    "actions": ["route"],
+    "logging": { "type": "std_out", "level": "none" }
+  },
+  "thor": {
+    "logging": { "type": "std_out", "level": "none" }
+  },
+  "odin": {
+    "logging": { "type": "std_out", "level": "none" }
+  },
+  "meili": {
+    "mode": "pedestrian",
+    "default": {
+      "search_radius": 50,
+      "gps_accuracy": 5.0
+    }
+  }
+}

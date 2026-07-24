@@ -41,6 +41,18 @@ class RoutingRepository @Inject constructor(
 
     suspend fun hasTiles(): Boolean = activeRegionFile.exists()
 
+    suspend fun installDemoIfNeeded() {
+        if (activeRegionFile.exists()) return
+        try {
+            context.assets.open("routing/valhalla_tiles.tar").use { input ->
+                activeRegionFile.parentFile?.mkdirs()
+                activeRegionFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+        } catch (_: Exception) {}
+    }
+
     suspend fun isReady(): Boolean {
         return actor != null || activeRegionFile.exists()
     }

@@ -54,21 +54,34 @@ fun DownloadRoutingScreen(
             )
             Text("${(state.downloadProgress * 100).toInt()}%", modifier = Modifier.align(Alignment.CenterHorizontally))
         } else {
+            val demoUrl = "https://github.com/StaticQuo6/StaticQuo2/releases/download/demo-routing-tiles-v1/valhalla_tiles.tar"
+
+            if (state.hasTiles) {
+                Text("Demo tiles (Andorra) installed from assets.", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                Spacer(Modifier.height(8.dp))
+            }
+
             OutlinedTextField(
                 value = url,
                 onValueChange = { url = it },
                 label = { Text("Download URL") },
-                placeholder = { Text("https://github.com/.../tiles.tar") },
+                placeholder = { Text(demoUrl) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(8.dp))
             Button(
-                onClick = { viewModel.downloadTiles(url) },
-                enabled = url.isNotBlank(),
+                onClick = { viewModel.downloadTiles(url.ifBlank { demoUrl }) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Download Tiles")
+            }
+            Spacer(Modifier.height(4.dp))
+            OutlinedButton(
+                onClick = { url = demoUrl },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Use Demo URL")
             }
         }
 
