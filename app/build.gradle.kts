@@ -62,8 +62,7 @@ tasks.register("checkNoTodos") {
     doLast {
         val violations = fileTree("src/main/java")
             .include("**/*.kt")
-            .files
-            .flatMap { file ->
+            .flatMap { file: java.io.File ->
                 file.readLines()
                     .mapIndexedNotNull { index, line ->
                         if (line.contains(Regex("\\b(TODO|FIXME|stub|STUB|todo|fixme)\\b")) &&
