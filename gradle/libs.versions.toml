@@ -1,8 +1,8 @@
 [versions]
-agp = "8.5.0"
-kotlin = "2.3.0"
-ksp = "2.3.0"
-hilt = "2.51.1"
+agp = "8.6.2"
+kotlin = "2.0.21"
+ksp = "2.0.21-1.0.28"
+hilt = "2.58"
 room = "2.6.1"
 composeBom = "2024.09.00"
 
