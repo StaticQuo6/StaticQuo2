@@ -5,12 +5,12 @@ ksp = "2.0.0-1.0.22"
 hilt = "2.51.1"
 room = "2.6.1"
 composeBom = "2024.09.00"
-composeCompiler = "1.5.14"
+
 activityCompose = "1.9.1"
 lifecycle = "2.8.4"
 coreKtx = "1.13.1"
 navigationCompose = "2.8.0"
-argon2kt = "1.4.1"
+argon2kt = "1.5.0"
 tink = "1.15.0"
 
 [libraries]
@@ -48,7 +48,7 @@ argon2kt = { group = "com.lambdapioneer.argon2kt", name = "argon2kt", version.re
 tink-android = { group = "com.google.crypto.tink", name = "tink-android", version.ref = "tink" }
 
 # MapLibre
-maplibre-sdk = { group = "org.maplibre.gl", name = "android-sdk", version = "11.0.2" }
+maplibre-sdk = { group = "org.maplibre.gl", name = "android-sdk", version = "11.1.0" }
 
 # Location
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version = "21.3.0" }

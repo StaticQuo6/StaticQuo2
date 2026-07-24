@@ -58,6 +58,30 @@ android {
     }
 }
 
+tasks.register("checkNoTodos") {
+    doLast {
+        val violations = fileTree("src/main/java")
+            .include("**/*.kt")
+            .files
+            .flatMap { file ->
+                file.readLines()
+                    .mapIndexedNotNull { index, line ->
+                        if (line.contains(Regex("\\b(TODO|FIXME|stub|STUB|todo|fixme)\\b")) &&
+                            !line.contains(Regex("(TODO|FIXME|stub|STUB|todo|fixme)\\s*\\(\\s*\"(ongoing|planned|future|next)\\s*\\)"))
+                        ) {
+                            "${file.relativeTo(projectDir)}:$index: $line"
+                        } else null
+                    }
+            }
+        if (violations.isNotEmpty()) {
+            throw GradleException(
+                "Found TODO/FIXME/stub markers in completed code:\n${violations.joinToString("\n")}"
+            )
+        }
+    }
+}
+tasks.named("check") { dependsOn("checkNoTodos") }
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
