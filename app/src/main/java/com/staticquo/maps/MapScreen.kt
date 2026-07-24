@@ -447,3 +447,24 @@ private fun AddBeaconDialog(
         }
     )
 }
+
+private fun buildOfflineStyle(mbtilesPath: String): String {
+    return """{
+        "version": 8,
+        "name": "StaticQuo Offline",
+        "sources": {
+            "offline": {
+                "type": "raster",
+                "url": "mbtiles://$mbtilesPath",
+                "tileSize": 256
+            }
+        },
+        "layers": [
+            {
+                "id": "offline-layer",
+                "type": "raster",
+                "source": "offline"
+            }
+        ]
+    }"""
+}

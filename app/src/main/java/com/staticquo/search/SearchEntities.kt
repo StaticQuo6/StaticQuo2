@@ -12,7 +12,10 @@ data class SearchIndexFts(
     val title: String,
 
     @ColumnInfo(name = "content")
-    val content: String
+    val content: String,
+
+    @ColumnInfo(name = "source_file")
+    val sourceFile: String
 )
 
 @Entity(tableName = "search_documents")

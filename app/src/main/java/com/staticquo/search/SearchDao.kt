@@ -5,9 +5,9 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 
-data class SearchResult(
+data class SearchResultRow(
     val title: String,
-    val snippet: String,
+    val content: String,
     val sourceFile: String
 )
 
@@ -15,7 +15,7 @@ data class SearchResult(
 interface SearchDao {
 
     @Query("SELECT title, content, source_file FROM search_index_fts WHERE search_index_fts MATCH :query")
-    suspend fun search(query: String): List<SearchResult>
+    suspend fun search(query: String): List<SearchResultRow>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDocument(doc: SearchDocument): Long
