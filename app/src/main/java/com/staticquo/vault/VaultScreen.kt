@@ -54,7 +54,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toComposeBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -306,7 +306,7 @@ private fun ViewEntryDialog(
                             entry.content, 0, entry.content.size
                         )?.let { bitmap ->
                             androidx.compose.foundation.Image(
-                                bitmap = bitmap.toComposeBitmap(),
+                                bitmap = bitmap.asImageBitmap(),
                                 contentDescription = entry.title,
                                 modifier = Modifier.fillMaxWidth(),
                                 contentScale = ContentScale.Fit

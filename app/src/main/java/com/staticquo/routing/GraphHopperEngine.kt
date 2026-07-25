@@ -38,9 +38,6 @@ class GraphHopperEngine @Inject constructor() {
             val gh = GraphHopper()
             gh.setGraphHopperLocation(graphDirectory)
             gh.load()
-            if (!gh.isLoaded()) {
-                return Result.failure(Exception("Failed to load graph"))
-            }
             hopper = gh
             loadedPath = graphDirectory
             Result.success(Unit)
