@@ -2,6 +2,7 @@ package com.staticquo.vault
 
 import android.content.Context
 import com.google.crypto.tink.Aead
+import dagger.hilt.android.qualifiers.ApplicationContext
 import com.google.crypto.tink.KeyTemplates
 import com.google.crypto.tink.aead.AeadConfig
 import com.google.crypto.tink.integration.android.AndroidKeysetManager
@@ -18,7 +19,7 @@ sealed class VaultEncryptionResult<T> {
 
 @Singleton
 class VaultEncryptionManager @Inject constructor(
-    private val context: Context
+    @ApplicationContext private val context: Context
 ) {
     private var aead: Aead? = null
     private var initError: String? = null
