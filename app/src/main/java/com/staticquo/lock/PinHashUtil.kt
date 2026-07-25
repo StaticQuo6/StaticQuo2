@@ -2,6 +2,8 @@ package com.staticquo.lock
 
 import com.lambdapioneer.argon2kt.Argon2Kt
 import com.lambdapioneer.argon2kt.Argon2Mode
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.security.SecureRandom
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,7 +24,7 @@ class PinHashUtil @Inject constructor(
         val hash: String
     )
 
-    fun hash(pin: String): HashResult {
+    suspend fun hash(pin: String): HashResult = withContext(Dispatchers.Default) {
         val salt = ByteArray(SALT_LENGTH).apply {
             SecureRandom().nextBytes(this)
         }
@@ -35,11 +37,11 @@ class PinHashUtil @Inject constructor(
             parallelism = PARALLELISM,
             hashLengthInBytes = HASH_LENGTH
         )
-        return HashResult(hash = result.encodedOutputAsString())
+        HashResult(hash = result.encodedOutputAsString())
     }
 
-    fun verify(pin: String, encodedHash: String): Boolean {
-        return try {
+    suspend fun verify(pin: String, encodedHash: String): Boolean = withContext(Dispatchers.Default) {
+        try {
             argon2.verify(
                 mode = Argon2Mode.ARGON2_ID,
                 encoded = encodedHash,
