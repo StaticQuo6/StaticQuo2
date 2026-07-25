@@ -1,6 +1,6 @@
 package com.staticquo.routing
 
-import com.graphhopper.GHPoint
+import com.graphhopper.util.shapes.GHPoint
 import com.graphhopper.GHRequest
 import com.graphhopper.GraphHopper
 import com.graphhopper.ResponsePath

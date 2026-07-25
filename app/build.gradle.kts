@@ -109,7 +109,7 @@ dependencies {
 
     // GraphHopper
     implementation(libs.graphhopper.core)
-    implementation(libs.graphhopper.api)
+    implementation(libs.graphhopper.web.api)
 
     // Coroutines Play Services
     implementation(libs.coroutines.play.services)

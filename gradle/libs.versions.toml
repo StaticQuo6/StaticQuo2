@@ -63,7 +63,7 @@ okio = { group = "com.squareup.okio", name = "okio", version.ref = "okio" }
 
 # GraphHopper offline routing
 graphhopper-core = { group = "com.graphhopper", name = "graphhopper-core", version.ref = "graphhopper" }
-graphhopper-api = { group = "com.graphhopper", name = "graphhopper-api", version.ref = "graphhopper" }
+graphhopper-web-api = { group = "com.graphhopper", name = "graphhopper-web-api", version.ref = "graphhopper" }
 
 # Coroutines Play Services (for Task.await())
 coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version = "1.8.1" }
