@@ -1,5 +1,6 @@
 package com.staticquo.mesh
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
@@ -13,6 +14,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+@SuppressLint("MissingPermission")
 class MeshGattServer @Inject constructor(
     @ApplicationContext private val context: Context
 ) {

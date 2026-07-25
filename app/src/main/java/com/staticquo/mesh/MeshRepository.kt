@@ -1,6 +1,8 @@
 package com.staticquo.mesh
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.provider.Settings
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -16,6 +18,7 @@ sealed class MeshInitResult {
 }
 
 @Singleton
+@SuppressLint("MissingPermission")
 class MeshRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val advertiser: MeshAdvertiser,
@@ -32,8 +35,13 @@ class MeshRepository @Inject constructor(
             ?: "unknown"
     }
 
+    private val bleAdapter: BluetoothAdapter? by lazy {
+        val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
+        manager?.adapter
+    }
+
     val nodeName: String by lazy {
-        val btName = BluetoothAdapter.getDefaultAdapter()?.name
+        val btName = bleAdapter?.name
         btName?.takeIf { it.startsWith(MeshConstants.DEVICE_NAME_PREFIX) }
             ?: "${MeshConstants.DEVICE_NAME_PREFIX}${nodeId.take(8)}"
     }
@@ -55,7 +63,7 @@ class MeshRepository @Inject constructor(
             return MeshInitResult.PermissionsDenied(missing)
         }
 
-        val adapter = BluetoothAdapter.getDefaultAdapter()
+        val adapter = bleAdapter
         if (adapter == null || !adapter.isEnabled) {
             return MeshInitResult.BluetoothNotAvailable("Bluetooth disabled or unavailable")
         }

@@ -1,17 +1,20 @@
 package com.staticquo.mesh
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothProfile
 import android.content.Context
+import android.os.Build
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+@SuppressLint("MissingPermission")
 class MeshGattClient @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
@@ -72,9 +75,16 @@ class MeshGattClient @Inject constructor(
             val data = json.toString().toByteArray(Charsets.UTF_8)
             if (data.size > MeshConstants.MAX_MESSAGE_SIZE) return false
 
-            characteristic.setValue(data)
-            characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
-            return gatt.writeCharacteristic(characteristic)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                return gatt.writeCharacteristic(
+                    characteristic, data, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+                ) == BluetoothGatt.GATT_SUCCESS
+            } else {
+                @Suppress("DEPRECATION")
+                characteristic.setValue(data)
+                @Suppress("DEPRECATION")
+                return gatt.writeCharacteristic(characteristic)
+            }
         } catch (_: Exception) {
             return false
         }

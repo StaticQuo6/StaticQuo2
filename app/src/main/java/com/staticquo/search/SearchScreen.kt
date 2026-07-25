@@ -13,8 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Article
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -85,7 +84,7 @@ fun SearchScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(Icons.Default.Article, contentDescription = null, tint = Color.Gray)
+                Icon(Icons.AutoMirrored.Filled.Article, contentDescription = null, tint = Color.Gray)
                 Spacer(Modifier.height(8.dp))
                 Text("No results found", color = Color.Gray)
             }
@@ -138,7 +137,7 @@ private fun ResultCard(
         Column(Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.Default.Article,
+                    Icons.AutoMirrored.Filled.Article,
                     contentDescription = null,
                     tint = Color(0xFF1A3A5C),
                     modifier = Modifier.height(18.dp)

@@ -1,5 +1,6 @@
 package com.staticquo.mesh
 
+import android.annotation.SuppressLint
 import android.bluetooth.le.AdvertiseCallback
 import android.bluetooth.le.AdvertiseData
 import android.bluetooth.le.AdvertiseSettings
@@ -10,6 +11,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+@SuppressLint("MissingPermission")
 class MeshAdvertiser @Inject constructor(
     @ApplicationContext private val context: Context
 ) {

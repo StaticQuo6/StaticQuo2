@@ -39,7 +39,7 @@ jobs:
           fi
 
       - name: Run tests and lint
-        run: gradle check lint --continue
+        run: gradle check lint --continue --scan
 
       - name: Build debug APK
         run: gradle assembleDebug

@@ -1,5 +1,6 @@
 package com.staticquo.mesh
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
@@ -11,6 +12,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+@SuppressLint("MissingPermission")
 class MeshScanner @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
