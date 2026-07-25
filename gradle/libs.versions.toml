@@ -12,6 +12,8 @@ coreKtx = "1.13.1"
 navigationCompose = "2.8.0"
 argon2kt = "1.5.0"
 tink = "1.15.0"
+okhttp = "4.12.0"
+okio = "3.9.0"
 graphhopper = "11.0"
 
 [libraries]
