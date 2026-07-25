@@ -7,7 +7,7 @@ on:
 
 env:
   APP_NAME: StaticQuo
-  GRADLE_VERSION: "8.7"
+  GRADLE_VERSION: "8.14.5"
 
 jobs:
   build:
