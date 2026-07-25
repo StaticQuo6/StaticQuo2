@@ -35,8 +35,6 @@ import com.staticquo.maps.MapScreen
 import com.staticquo.search.SearchScreen
 import com.staticquo.backup.BackupScreen
 import com.staticquo.settings.DownloadMapsScreen
-// TODO: Re-enable when routing is reintroduced
-// import com.staticquo.settings.DownloadRoutingScreen
 import com.staticquo.settings.SettingsScreen
 import com.staticquo.vault.VaultScreen
 import dagger.hilt.android.AndroidEntryPoint
@@ -73,7 +71,6 @@ private fun MainNavigation() {
     var selectedTab by rememberSaveable { mutableStateOf(0) }
     var showDownloadMaps by rememberSaveable { mutableStateOf(false) }
     var showBackup by rememberSaveable { mutableStateOf(false) }
-    var showRoutingTiles by rememberSaveable { mutableStateOf(false) }
 
     if (showDownloadMaps) {
         DownloadMapsScreen(onBack = { showDownloadMaps = false })
@@ -84,12 +81,6 @@ private fun MainNavigation() {
         BackupScreen(onBack = { showBackup = false })
         return
     }
-
-    // TODO: Re-enable when routing is reintroduced
-    // if (showRoutingTiles) {
-    //     DownloadRoutingScreen(onBack = { showRoutingTiles = false })
-    //     return
-    // }
 
     Scaffold(
         bottomBar = {
@@ -135,10 +126,7 @@ private fun MainNavigation() {
                     4 -> SearchScreen()
                     5 -> SettingsScreen(
                         onNavigateToDownloadMaps = { showDownloadMaps = true },
-                        onNavigateToBackup = { showBackup = true },
-                        // TODO: Re-enable when routing is reintroduced
-                        // onNavigateToRoutingTiles = { showRoutingTiles = true },
-                        onNavigateToRoutingTiles = {}
+                        onNavigateToBackup = { showBackup = true }
                     )
                 }
         }

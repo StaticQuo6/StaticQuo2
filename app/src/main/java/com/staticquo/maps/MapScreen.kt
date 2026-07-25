@@ -57,9 +57,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.staticquo.heatmap.BeaconType
 import com.staticquo.heatmap.HeatmapViewModel
-// TODO: Re-enable offline routing when valhalla-mobile is replaced
-// import com.staticquo.routing.RoutePoint
-// import com.staticquo.routing.RoutingViewModel
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.MapLibreMap
@@ -70,16 +67,12 @@ import java.io.File
 fun MapScreen(
     mapViewModel: MapViewModel = hiltViewModel(),
     heatmapViewModel: HeatmapViewModel = hiltViewModel(),
-    // routingViewModel: RoutingViewModel = hiltViewModel(),  // TODO: re-enable with routing
 ) {
     val mapState by mapViewModel.uiState.collectAsState()
     val heatmapState by heatmapViewModel.uiState.collectAsStateWithLifecycle()
-    // val routingState by routingViewModel.uiState.collectAsStateWithLifecycle()  // TODO: routing
 
     var pendingBeaconLat by remember { mutableStateOf(0.0) }
     var pendingBeaconLng by remember { mutableStateOf(0.0) }
-    // var routingMode by remember { mutableStateOf(false) }  // TODO: re-enable with routing
-    // var polylineRef by remember { mutableStateOf<org.maplibre.android.annotations.Polyline?>(null) }  // TODO: routing
 
     if (mapState.isLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -118,7 +111,6 @@ fun MapScreen(
                             mapLibreMap = map
 
                             map.addOnMapClickListener { point ->
-                                // TODO: re-enable routingMode branch when routing is reintroduced
                                 if (!heatmapState.showAddDialog) {
                                     pendingBeaconLat = point.latitude
                                     pendingBeaconLng = point.longitude
@@ -131,9 +123,6 @@ fun MapScreen(
                 },
                 modifier = Modifier.fillMaxSize()
             )
-
-            // TODO: re-enable route polyline overlay when routing is reintroduced
-            // LaunchedEffect(routingState.route, ...) { ... }
 
             LaunchedEffect(heatmapState.beacons, heatmapState.showHeatmap, heatmapState.activeFilter) {
                 val map = mapLibreMap ?: return@LaunchedEffect
@@ -189,9 +178,6 @@ fun MapScreen(
                 )
             }
 
-            // TODO: re-enable routing mode hint when routing is reintroduced
-            // if (routingMode) { ... }
-
             Column(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -214,13 +200,7 @@ fun MapScreen(
                     Icon(Icons.Default.MyLocation, "Legend", tint = Color.White, modifier = Modifier.size(20.dp))
                 }
 
-                // TODO: re-enable routing R FAB when routing is reintroduced
-                // FloatingActionButton(...) { Text("R") }
             }
-
-            // TODO: re-enable route info card when routing is reintroduced
-            // val route = routingState.route
-            // if (route != null) { Card(...) }
 
             if (heatmapState.showLegend) {
                 Card(

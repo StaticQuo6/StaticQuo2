@@ -25,8 +25,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun SettingsScreen(
     onNavigateToDownloadMaps: () -> Unit,
-    onNavigateToBackup: () -> Unit,
-    onNavigateToRoutingTiles: () -> Unit
+    onNavigateToBackup: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -61,12 +60,6 @@ fun SettingsScreen(
                 subtitle = "WebDAV backup for vault and heatmap data",
                 onClick = onNavigateToBackup
             )
-            // TODO: re-enable when routing is reintroduced
-            // SettingsItem(
-            //     title = "Routing Tiles",
-            //     subtitle = "Download offline Valhalla routing data",
-            //     onClick = onNavigateToRoutingTiles
-            // )
         }
     }
 }
