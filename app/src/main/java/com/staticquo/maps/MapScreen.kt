@@ -130,8 +130,9 @@ fun MapScreen(
 
                 if (!heatmapState.showHeatmap) return@LaunchedEffect
 
-                val filtered = if (heatmapState.activeFilter != null) {
-                    heatmapState.beacons.filter { it.beaconType == heatmapState.activeFilter.name }
+                val activeFilter = heatmapState.activeFilter
+                val filtered = if (activeFilter != null) {
+                    heatmapState.beacons.filter { it.beaconType == activeFilter.name }
                 } else {
                     heatmapState.beacons
                 }

@@ -125,7 +125,7 @@ fun MeshScreen(
             items(state.messages.reversed(), key = { it.id }) { msg ->
                 Card(
                     colors = CardDefaults.cardColors(
-                        containerColor = if (msg.senderId == meshRepository.nodeId)
+                        containerColor = if (msg.senderId == state.nodeId)
                             Color(0xFFE3F2FD) else Color.White
                     ),
                     elevation = CardDefaults.cardElevation(1.dp)

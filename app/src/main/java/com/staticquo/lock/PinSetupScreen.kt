@@ -181,15 +181,17 @@ fun PinUnlockScreen(
 
 @Composable
 private fun PinDotRow(pinLength: Int, maxLength: Int) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    Box(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        alignment = Alignment.CenterHorizontally
+        contentAlignment = Alignment.Center
     ) {
-        val visibleCount = maxOf(pinLength, 4)
-        repeat(visibleCount) { index ->
-            Box(
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val visibleCount = maxOf(pinLength, 4)
+            for (index in 0 until visibleCount) {
+                Box(
                 modifier = Modifier
                     .size(if (index < pinLength) 16.dp else 12.dp)
                     .clip(CircleShape)
@@ -198,6 +200,7 @@ private fun PinDotRow(pinLength: Int, maxLength: Int) {
                         else Color.White.copy(alpha = 0.3f)
                     )
             )
+            }
         }
     }
 }

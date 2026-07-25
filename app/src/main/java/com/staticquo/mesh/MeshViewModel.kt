@@ -12,6 +12,7 @@ import javax.inject.Inject
 
 data class MeshUiState(
     val isStarted: Boolean = false,
+    val nodeId: String = "",
     val peers: List<PeerInfo> = emptyList(),
     val messages: List<MeshMessage> = emptyList(),
     val statusMessage: String = "",
@@ -30,7 +31,7 @@ class MeshViewModel @Inject constructor(
     fun startMesh() {
         viewModelScope.launch {
             val result = meshRepository.initialize()
-            _uiState.value = _uiState.value.copy(initResult = result)
+            _uiState.value = _uiState.value.copy(initResult = result, nodeId = meshRepository.nodeId)
 
             when (result) {
                 is MeshInitResult.Success -> {

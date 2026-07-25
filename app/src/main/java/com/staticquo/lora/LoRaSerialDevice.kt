@@ -22,6 +22,7 @@ class LoRaSerialDevice @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     private var connection: UsbDeviceConnection? = null
+    private var connectedDevice: UsbDevice? = null
     private var readEndpoint: UsbEndpoint? = null
     private var writeEndpoint: UsbEndpoint? = null
 
@@ -60,6 +61,7 @@ class LoRaSerialDevice @Inject constructor(
 
         val endpoints = getEndpoints(usbInterface)
         connection = conn
+        connectedDevice = device
         readEndpoint = endpoints.first
         writeEndpoint = endpoints.second
 
@@ -72,12 +74,13 @@ class LoRaSerialDevice @Inject constructor(
         try {
             connection?.releaseInterface(
                 findDataInterface(
-                    connection?.device ?: return
+                    connectedDevice ?: return
                 ) ?: return
             )
         } catch (_: Exception) {}
         connection?.close()
         connection = null
+        connectedDevice = null
         readEndpoint = null
         writeEndpoint = null
     }
