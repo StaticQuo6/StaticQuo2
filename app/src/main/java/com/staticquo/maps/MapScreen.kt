@@ -55,10 +55,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import android.database.sqlite.SQLiteDatabase
 import com.staticquo.heatmap.BeaconType
 import com.staticquo.heatmap.HeatmapViewModel
 import org.maplibre.android.MapLibre
 import org.maplibre.android.WellKnownTileServer
+import org.maplibre.android.camera.CameraPosition
+import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.MapLibreMap
@@ -114,7 +117,19 @@ fun MapScreen(
                         mapView = mv
                         mv.getMapAsync { map ->
                             val styleJson = buildOfflineStyle(mbtilesFile!!.absolutePath)
-                            map.setStyle(Style.Builder().fromJson(styleJson))
+                            map.setStyle(Style.Builder().fromJson(styleJson)) {
+                                val camera = mbtilesFile?.let { readMbtilesCenter(it.absolutePath) }
+                                if (camera != null) {
+                                    map.moveCamera(
+                                        CameraUpdateFactory.newCameraPosition(
+                                            CameraPosition.Builder()
+                                                .target(LatLng(camera.first, camera.second))
+                                                .zoom(camera.third)
+                                                .build()
+                                        )
+                                    )
+                                }
+                            }
                             mapLibreMap = map
 
                             map.addOnMapClickListener { point ->
@@ -357,6 +372,27 @@ private fun AddBeaconDialog(
             TextButton(onClick = onDismiss) { Text("Cancel") }
         }
     )
+}
+
+private fun readMbtilesCenter(mbtilesPath: String): Triple<Double, Double, Double>? {
+    var db: SQLiteDatabase? = null
+    var cursor: android.database.Cursor? = null
+    try {
+        db = SQLiteDatabase.openDatabase(mbtilesPath, null, SQLiteDatabase.OPEN_READONLY)
+        cursor = db.rawQuery("SELECT value FROM metadata WHERE name = 'center'", null)
+        if (cursor.moveToFirst()) {
+            val parts = cursor.getString(0).split(",")
+            if (parts.size >= 3) {
+                return Triple(parts[0].toDouble(), parts[1].toDouble(), parts[2].toDouble())
+            }
+        }
+        return null
+    } catch (_: Exception) {
+        return null
+    } finally {
+        cursor?.close()
+        db?.close()
+    }
 }
 
 private fun buildOfflineStyle(mbtilesPath: String): String {

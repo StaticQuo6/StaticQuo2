@@ -1,5 +1,8 @@
 package com.staticquo.mesh
 
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.BluetoothDisabled
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -23,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,7 +36,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
@@ -40,6 +47,50 @@ fun MeshScreen(
     viewModel: MeshViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    var showPermissionRationale by remember { mutableStateOf(false) }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { grantResults ->
+        if (grantResults.values.all { it }) {
+            showPermissionRationale = false
+            viewModel.startMesh()
+        } else {
+            showPermissionRationale = true
+        }
+    }
+
+    fun requestMeshPermissions() {
+        val permissions = getMeshRuntimePermissions()
+        val missing = permissions.filter {
+            ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED
+        }
+        if (missing.isEmpty()) {
+            viewModel.startMesh()
+        } else {
+            permissionLauncher.launch(missing.toTypedArray())
+        }
+    }
+
+    if (showPermissionRationale) {
+        AlertDialog(
+            onDismissRequest = { showPermissionRationale = false },
+            title = { Text("Permissions Required") },
+            text = {
+                Text(
+                    "Mesh networking needs Bluetooth scanning, connecting, " +
+                    "advertising, and location permissions to discover nearby " +
+                    "devices. Please grant them in Settings."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showPermissionRationale = false }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -79,7 +130,7 @@ fun MeshScreen(
                 Spacer(Modifier.height(12.dp))
                 Text("Mesh not started", color = Color.Gray)
                 Spacer(Modifier.height(16.dp))
-                Button(onClick = { viewModel.startMesh() }) {
+                Button(onClick = { requestMeshPermissions() }) {
                     Icon(Icons.Default.Bluetooth, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
                     Text("Start Mesh")
