@@ -107,9 +107,6 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okio)
 
-    // Valhalla Routing
-    implementation(libs.valhalla.mobile)
-
     // Coroutines Play Services
     implementation(libs.coroutines.play.services)
 }

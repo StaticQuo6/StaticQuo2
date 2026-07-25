@@ -1,3 +1,6 @@
+// TODO: Reintroduce offline routing when a valhalla-mobile version compatible
+// with Kotlin 2.0.x is available, or evaluate a different routing library.
+// The repository methods now return Error stubs.
 package com.staticquo.routing
 
 import androidx.lifecycle.ViewModel

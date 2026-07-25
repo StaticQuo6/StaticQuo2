@@ -4,8 +4,8 @@ import android.content.Context
 import android.util.Base64
 import com.staticquo.heatmap.HeatmapDao
 import com.staticquo.heatmap.HeatmapEntity
-import com.staticquo.vault.VaultEntryDao
-import com.staticquo.vault.VaultEntryEntity
+import com.staticquo.data.db.VaultEntryDao
+import com.staticquo.data.db.VaultEntryEntity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.json.JSONArray
 import org.json.JSONObject

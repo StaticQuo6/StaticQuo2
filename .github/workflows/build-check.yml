@@ -39,7 +39,7 @@ jobs:
           fi
 
       - name: Run tests and lint
-        run: gradle check lint
+        run: ./gradlew check lint --continue
 
       - name: Build debug APK
         run: gradle assembleDebug

@@ -61,11 +61,12 @@ fun SettingsScreen(
                 subtitle = "WebDAV backup for vault and heatmap data",
                 onClick = onNavigateToBackup
             )
-            SettingsItem(
-                title = "Routing Tiles",
-                subtitle = "Download offline Valhalla routing data",
-                onClick = onNavigateToRoutingTiles
-            )
+            // TODO: re-enable when routing is reintroduced
+            // SettingsItem(
+            //     title = "Routing Tiles",
+            //     subtitle = "Download offline Valhalla routing data",
+            //     onClick = onNavigateToRoutingTiles
+            // )
         }
     }
 }

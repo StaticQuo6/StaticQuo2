@@ -1,3 +1,5 @@
+// TODO: Reintroduce offline routing — this entity is currently unreferenced
+// in the database schema (removed from AppDatabase entities list).
 package com.staticquo.routing
 
 import androidx.room.ColumnInfo

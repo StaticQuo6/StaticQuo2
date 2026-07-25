@@ -57,9 +57,9 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.staticquo.heatmap.BeaconType
 import com.staticquo.heatmap.HeatmapViewModel
-import com.staticquo.routing.RoutePoint
-import com.staticquo.routing.RoutingViewModel
-import org.maplibre.android.annotations.PolylineOptions
+// TODO: Re-enable offline routing when valhalla-mobile is replaced
+// import com.staticquo.routing.RoutePoint
+// import com.staticquo.routing.RoutingViewModel
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.MapLibreMap
@@ -70,16 +70,16 @@ import java.io.File
 fun MapScreen(
     mapViewModel: MapViewModel = hiltViewModel(),
     heatmapViewModel: HeatmapViewModel = hiltViewModel(),
-    routingViewModel: RoutingViewModel = hiltViewModel()
+    // routingViewModel: RoutingViewModel = hiltViewModel(),  // TODO: re-enable with routing
 ) {
     val mapState by mapViewModel.uiState.collectAsState()
     val heatmapState by heatmapViewModel.uiState.collectAsStateWithLifecycle()
-    val routingState by routingViewModel.uiState.collectAsStateWithLifecycle()
+    // val routingState by routingViewModel.uiState.collectAsStateWithLifecycle()  // TODO: routing
 
     var pendingBeaconLat by remember { mutableStateOf(0.0) }
     var pendingBeaconLng by remember { mutableStateOf(0.0) }
-    var routingMode by remember { mutableStateOf(false) }
-    var polylineRef by remember { mutableStateOf<org.maplibre.android.annotations.Polyline?>(null) }
+    // var routingMode by remember { mutableStateOf(false) }  // TODO: re-enable with routing
+    // var polylineRef by remember { mutableStateOf<org.maplibre.android.annotations.Polyline?>(null) }  // TODO: routing
 
     if (mapState.isLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -118,17 +118,8 @@ fun MapScreen(
                             mapLibreMap = map
 
                             map.addOnMapClickListener { point ->
-                                if (routingMode) {
-                                    val rp = RoutePoint(point.latitude, point.longitude)
-                                    if (routingState.origin == null) {
-                                        routingViewModel.setOrigin(rp)
-                                    } else if (routingState.destination == null) {
-                                        routingViewModel.setDestination(rp)
-                                    } else {
-                                        routingViewModel.clearPoints()
-                                        routingViewModel.setOrigin(rp)
-                                    }
-                                } else if (!heatmapState.showAddDialog) {
+                                // TODO: re-enable routingMode branch when routing is reintroduced
+                                if (!heatmapState.showAddDialog) {
                                     pendingBeaconLat = point.latitude
                                     pendingBeaconLng = point.longitude
                                     heatmapViewModel.showAddDialog()
@@ -141,29 +132,8 @@ fun MapScreen(
                 modifier = Modifier.fillMaxSize()
             )
 
-            LaunchedEffect(routingState.route, routingState.origin, routingState.destination) {
-                val map = mapLibreMap ?: return@LaunchedEffect
-
-                val existing = polylineRef
-                if (existing != null) {
-                    try { map.removePolyline(existing) } catch (_: Exception) {}
-                    polylineRef = null
-                }
-
-                val route = routingState.route ?: return@LaunchedEffect
-
-                val pts = route.points.map { LatLng(it.latitude, it.longitude) }
-                if (pts.size < 2) return@LaunchedEffect
-
-                try {
-                    polylineRef = map.addPolyline(
-                        PolylineOptions()
-                            .addAll(pts)
-                            .color(android.graphics.Color.rgb(0, 105, 217))
-                            .width(6f)
-                    )
-                } catch (_: Exception) {}
-            }
+            // TODO: re-enable route polyline overlay when routing is reintroduced
+            // LaunchedEffect(routingState.route, ...) { ... }
 
             LaunchedEffect(heatmapState.beacons, heatmapState.showHeatmap, heatmapState.activeFilter) {
                 val map = mapLibreMap ?: return@LaunchedEffect
@@ -219,23 +189,8 @@ fun MapScreen(
                 )
             }
 
-            if (routingMode) {
-                val hint = when {
-                    routingState.origin == null -> "Tap to set origin"
-                    routingState.destination == null -> "Tap to set destination"
-                    routingState.isCalculating -> "Calculating route..."
-                    else -> "Tap to start new route"
-                }
-                Text(
-                    hint,
-                    color = Color.White,
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = 8.dp)
-                        .background(Color(0x99000000), shape = MaterialTheme.shapes.small)
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-            }
+            // TODO: re-enable routing mode hint when routing is reintroduced
+            // if (routingMode) { ... }
 
             Column(
                 modifier = Modifier
@@ -259,46 +214,13 @@ fun MapScreen(
                     Icon(Icons.Default.MyLocation, "Legend", tint = Color.White, modifier = Modifier.size(20.dp))
                 }
 
-                FloatingActionButton(
-                    onClick = {
-                        routingMode = !routingMode
-                        if (!routingMode) routingViewModel.clearPoints()
-                    },
-                    modifier = Modifier.size(40.dp),
-                    containerColor = if (routingMode) Color(0xFF1565C0) else Color.Gray
-                ) {
-                    Text("R", color = Color.White, fontWeight = FontWeight.Bold)
-                }
+                // TODO: re-enable routing R FAB when routing is reintroduced
+                // FloatingActionButton(...) { Text("R") }
             }
 
-            val route = routingState.route
-            if (route != null) {
-                Card(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp)
-                        .fillMaxWidth(0.9f),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(4.dp)
-                ) {
-                    Column(Modifier.padding(12.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("Route", style = MaterialTheme.typography.titleSmall)
-                            TextButton(onClick = { routingViewModel.clearPoints() }) {
-                                Text("Clear")
-                            }
-                        }
-                        Spacer(Modifier.height(4.dp))
-                        val distKm = String.format("%.1f km", route.distanceKm)
-                        val minutes = (route.durationSeconds / 60).toInt()
-                        Text("$distKm · ${minutes} min", style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
-            }
+            // TODO: re-enable route info card when routing is reintroduced
+            // val route = routingState.route
+            // if (route != null) { Card(...) }
 
             if (heatmapState.showLegend) {
                 Card(
