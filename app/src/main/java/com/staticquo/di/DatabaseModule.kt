@@ -7,6 +7,7 @@ import com.staticquo.data.db.AppLockDao
 import com.staticquo.data.db.MapRegionDao
 import com.staticquo.data.db.RoutingDao
 import com.staticquo.data.db.VaultEntryDao
+import com.staticquo.data.db.VaultLockDao
 import com.staticquo.heatmap.HeatmapDao
 import com.staticquo.search.SearchDao
 import dagger.Module
@@ -46,4 +47,7 @@ object DatabaseModule {
 
     @Provides
     fun provideRoutingDao(db: AppDatabase): RoutingDao = db.routingDao()
+
+    @Provides
+    fun provideVaultLockDao(db: AppDatabase): VaultLockDao = db.vaultLockDao()
 }

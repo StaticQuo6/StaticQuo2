@@ -5,6 +5,7 @@ import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,6 +43,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -58,10 +60,15 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.staticquo.lock.PinDotRow
+import com.staticquo.lock.PinKeypad
 import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -73,6 +80,109 @@ fun VaultScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    when (state.lockScreen) {
+        VaultLockScreen.LOADING -> {
+            Box(
+                modifier = Modifier.fillMaxSize().background(Color(0xFF1A3A5C)),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator(color = Color.White)
+                    Spacer(Modifier.height(16.dp))
+                    Text("StaticQuo", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+        VaultLockScreen.SET_PIN -> {
+            VaultPinSetupScreen(viewModel = viewModel)
+        }
+        VaultLockScreen.UNLOCK -> {
+            VaultPinUnlockScreen(viewModel = viewModel)
+        }
+        VaultLockScreen.CONTENT -> {
+            VaultContentScreen(viewModel = viewModel, snackbarHostState = snackbarHostState)
+        }
+    }
+}
+
+@Composable
+private fun VaultPinSetupScreen(viewModel: VaultViewModel) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF1A3A5C)) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text("Set Vault PIN", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = if (state.pinError == "Confirm your PIN") "Confirm your PIN"
+                       else "Choose a 4-8 digit PIN",
+                color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp
+            )
+            Spacer(Modifier.height(32.dp))
+            PinDotRow(pinLength = state.pinEntry.length, maxLength = 8)
+            Spacer(Modifier.height(8.dp))
+            if (state.pinError != null && state.pinError != "Confirm your PIN") {
+                Text(state.pinError!!, color = Color(0xFFFF5252), fontSize = 14.sp, textAlign = TextAlign.Center,
+                     modifier = Modifier.padding(horizontal = 16.dp))
+            }
+            Spacer(Modifier.height(32.dp))
+            PinKeypad(
+                onDigit = { digit -> viewModel.onPinDigit(digit) },
+                onDelete = { viewModel.onDeleteDigit() },
+                onConfirm = { if (state.pinEntry.isNotEmpty()) viewModel.onSetupPin(state.pinEntry) },
+                confirmLabel = if (state.pinError == "Confirm your PIN") "Confirm" else "Next"
+            )
+        }
+    }
+}
+
+@Composable
+private fun VaultPinUnlockScreen(viewModel: VaultViewModel) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF1A3A5C)) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text("Secure Vault", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(8.dp))
+            Text("Enter vault PIN to unlock", color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp)
+            Spacer(Modifier.height(32.dp))
+            PinDotRow(pinLength = state.pinEntry.length, maxLength = 8)
+            Spacer(Modifier.height(8.dp))
+            if (state.pinError != null) {
+                Text(state.pinError!!, color = Color(0xFFFF5252), fontSize = 14.sp, textAlign = TextAlign.Center,
+                     modifier = Modifier.padding(horizontal = 16.dp))
+            }
+            if (state.lockoutRemainingMs > 0) {
+                Text("Locked: ${state.lockoutRemainingMs / 1000}s remaining",
+                     color = Color(0xFFFFD740), fontSize = 14.sp)
+            }
+            Spacer(Modifier.height(32.dp))
+            PinKeypad(
+                onDigit = { digit -> viewModel.onPinDigit(digit) },
+                onDelete = { viewModel.onDeleteDigit() },
+                onConfirm = { if (state.pinEntry.isNotEmpty()) viewModel.onUnlockPin(state.pinEntry) },
+                confirmLabel = "Unlock"
+            )
+        }
+    }
+}
+
+@Composable
+private fun VaultContentScreen(
+    viewModel: VaultViewModel,
+    snackbarHostState: SnackbarHostState
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     var showImportDialog by remember { mutableStateOf(false) }
@@ -124,10 +234,7 @@ fun VaultScreen(
         }
     ) { padding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
+            modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)
         ) {
             Text("Secure Vault", style = MaterialTheme.typography.headlineSmall)
 

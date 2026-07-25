@@ -14,9 +14,21 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+enum class VaultLockScreen {
+    LOADING,
+    SET_PIN,
+    UNLOCK,
+    CONTENT
+}
+
 data class VaultUiState(
+    val lockScreen: VaultLockScreen = VaultLockScreen.LOADING,
+    val pinEntry: String = "",
+    val pinError: String? = null,
+    val lockoutRemainingMs: Long = 0,
+    val firstPin: String = "",
     val entries: List<VaultEntryEntity> = emptyList(),
-    val isLoading: Boolean = true,
+    val isLoading: Boolean = false,
     val error: String? = null,
     val selectedEntry: DecryptedEntry? = null,
     val showAddDialog: Boolean = false,
@@ -26,14 +38,92 @@ data class VaultUiState(
 
 @HiltViewModel
 class VaultViewModel @Inject constructor(
-    private val repository: VaultRepository
+    private val repository: VaultRepository,
+    private val vaultPinRepository: VaultPinRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(VaultUiState())
     val uiState: StateFlow<VaultUiState> = _uiState.asStateFlow()
 
     init {
-        loadEntries()
+        viewModelScope.launch {
+            val isSet = vaultPinRepository.isPinSet()
+            _uiState.value = _uiState.value.copy(
+                lockScreen = if (isSet) VaultLockScreen.UNLOCK else VaultLockScreen.SET_PIN
+            )
+        }
+    }
+
+    fun onPinDigit(digit: Char) {
+        val current = _uiState.value.pinEntry
+        if (current.length < 8) {
+            _uiState.value = _uiState.value.copy(pinEntry = current + digit, pinError = null)
+        }
+    }
+
+    fun onDeleteDigit() {
+        val current = _uiState.value.pinEntry
+        if (current.isNotEmpty()) {
+            _uiState.value = _uiState.value.copy(pinEntry = current.dropLast(1), pinError = null)
+        }
+    }
+
+    fun onSetupPin(pin: String) {
+        val cur = _uiState.value
+        if (cur.firstPin.isEmpty()) {
+            if (pin.length < 4) {
+                _uiState.value = cur.copy(pinError = "PIN must be at least 4 digits")
+                return
+            }
+            _uiState.value = cur.copy(pinEntry = "", firstPin = pin, pinError = "Confirm your PIN")
+        } else {
+            if (pin == cur.firstPin) {
+                viewModelScope.launch {
+                    vaultPinRepository.setPin(pin)
+                    _uiState.value = _uiState.value.copy(
+                        lockScreen = VaultLockScreen.CONTENT,
+                        pinEntry = "",
+                        firstPin = "",
+                        pinError = null
+                    )
+                    loadEntries()
+                }
+            } else {
+                _uiState.value = cur.copy(pinEntry = "", firstPin = "", pinError = "PINs do not match. Try again.")
+            }
+        }
+    }
+
+    fun onUnlockPin(pin: String) {
+        viewModelScope.launch {
+            when (val result = vaultPinRepository.verifyPin(pin)) {
+                VaultPinRepository.VaultPinResult.CORRECT -> {
+                    _uiState.value = _uiState.value.copy(lockScreen = VaultLockScreen.CONTENT, pinEntry = "", pinError = null)
+                    loadEntries()
+                }
+                VaultPinRepository.VaultPinResult.INCORRECT -> {
+                    val attempts = vaultPinRepository.getFailedAttempts()
+                    _uiState.value = _uiState.value.copy(
+                        pinEntry = "",
+                        pinError = if (attempts >= 5) {
+                            "Wrong PIN. Lockout will activate after $attempts/5 attempts."
+                        } else {
+                            "Wrong PIN. $attempts of 5 attempts used."
+                        }
+                    )
+                }
+                VaultPinRepository.VaultPinResult.LOCKED_OUT -> {
+                    _uiState.value = _uiState.value.copy(
+                        pinEntry = "",
+                        pinError = "Too many attempts. Vault locked."
+                    )
+                }
+            }
+        }
+    }
+
+    fun dismissPinError() {
+        _uiState.value = _uiState.value.copy(pinError = null)
     }
 
     fun loadEntries() {

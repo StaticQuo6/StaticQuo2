@@ -180,7 +180,7 @@ fun PinUnlockScreen(
 }
 
 @Composable
-private fun PinDotRow(pinLength: Int, maxLength: Int) {
+fun PinDotRow(pinLength: Int, maxLength: Int) {
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
@@ -206,7 +206,7 @@ private fun PinDotRow(pinLength: Int, maxLength: Int) {
 }
 
 @Composable
-private fun PinKeypad(
+fun PinKeypad(
     onDigit: (Char) -> Unit,
     onDelete: () -> Unit,
     onConfirm: () -> Unit,
@@ -273,7 +273,7 @@ private fun PinKeypad(
 }
 
 @Composable
-private fun KeypadButton(
+fun KeypadButton(
     label: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit

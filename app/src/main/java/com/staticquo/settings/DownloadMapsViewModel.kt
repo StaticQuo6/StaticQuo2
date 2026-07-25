@@ -13,8 +13,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.io.File
-import java.net.URL
 import javax.inject.Inject
 
 data class DownloadMapsUiState(
@@ -248,8 +249,15 @@ class DownloadMapsViewModel @Inject constructor(
     }
 
     private fun geocode(query: String): List<GeocodingResult> {
-        val url = URL("https://nominatim.openstreetmap.org/search?q=${java.net.URLEncoder.encode(query, "UTF-8")}&format=json&limit=5")
-        val jsonText = url.readText()
+        val client = OkHttpClient()
+        val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
+        val request = Request.Builder()
+            .url("https://nominatim.openstreetmap.org/search?q=$encodedQuery&format=json&limit=5")
+            .header("User-Agent", "StaticQuo/1.0 (https://github.com/StaticQuo6/StaticQuo2)")
+            .build()
+        val response = client.newCall(request).execute()
+        val jsonText = response.body?.string() ?: throw Exception("Empty response from Nominatim")
+        response.close()
         val arr = org.json.JSONArray(jsonText)
         val results = mutableListOf<GeocodingResult>()
         for (i in 0 until arr.length()) {

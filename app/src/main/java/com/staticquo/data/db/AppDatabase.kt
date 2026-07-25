@@ -20,8 +20,9 @@ import javax.inject.Singleton
         SearchDocument::class,
         SearchIndexFts::class,
         RoutingRegionEntity::class,
+        VaultLockEntity::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -32,6 +33,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun heatmapDao(): HeatmapDao
     abstract fun searchDao(): SearchDao
     abstract fun routingDao(): RoutingDao
+    abstract fun vaultLockDao(): VaultLockDao
 
     companion object {
         const val DB_NAME = "staticquo.db"

@@ -530,8 +530,10 @@ private fun buildOfflineStyle(mbtilesPath: String): String {
         "sources": {
             "offline": {
                 "type": "raster",
-                "url": "mbtiles://$mbtilesPath",
-                "tileSize": 256
+                "tiles": ["mbtiles://$mbtilesPath/{z}/{x}/{y}.png"],
+                "tileSize": 256,
+                "minzoom": 0,
+                "maxzoom": 22
             }
         },
         "layers": [
