@@ -57,6 +57,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.staticquo.heatmap.BeaconType
 import com.staticquo.heatmap.HeatmapViewModel
+import org.maplibre.android.MapLibre
+import org.maplibre.android.WellKnownTileServer
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.MapLibreMap
@@ -102,6 +104,11 @@ fun MapScreen(
 
             AndroidView(
                 factory = { ctx ->
+                    try {
+                        MapLibre.getInstance(ctx)
+                    } catch (_: Exception) {
+                        MapLibre.getInstance(ctx, "", WellKnownTileServer.MapLibre)
+                    }
                     MapView(ctx).also { mv ->
                         mv.onCreate(null)
                         mapView = mv
