@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -58,6 +59,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import android.database.sqlite.SQLiteDatabase
 import com.staticquo.heatmap.BeaconType
 import com.staticquo.heatmap.HeatmapViewModel
+import com.staticquo.routing.RoutingViewModel
 import org.maplibre.android.MapLibre
 import org.maplibre.android.WellKnownTileServer
 import org.maplibre.android.camera.CameraPosition
@@ -72,9 +74,11 @@ import java.io.File
 fun MapScreen(
     mapViewModel: MapViewModel = hiltViewModel(),
     heatmapViewModel: HeatmapViewModel = hiltViewModel(),
+    routingViewModel: RoutingViewModel = hiltViewModel(),
 ) {
     val mapState by mapViewModel.uiState.collectAsState()
     val heatmapState by heatmapViewModel.uiState.collectAsStateWithLifecycle()
+    val routingState by routingViewModel.uiState.collectAsState()
 
     var pendingBeaconLat by remember { mutableStateOf(0.0) }
     var pendingBeaconLng by remember { mutableStateOf(0.0) }
@@ -133,7 +137,16 @@ fun MapScreen(
                             mapLibreMap = map
 
                             map.addOnMapClickListener { point ->
-                                if (!heatmapState.showAddDialog) {
+                                if (routingState.enabled) {
+                                    if (routingState.origin == null) {
+                                        routingViewModel.setOrigin(point.latitude, point.longitude)
+                                    } else if (routingState.destination == null) {
+                                        routingViewModel.setDestination(point.latitude, point.longitude)
+                                    } else {
+                                        routingViewModel.setOrigin(point.latitude, point.longitude)
+                                        routingViewModel.setDestination(null)
+                                    }
+                                } else if (!heatmapState.showAddDialog) {
                                     pendingBeaconLat = point.latitude
                                     pendingBeaconLng = point.longitude
                                     heatmapViewModel.showAddDialog()
@@ -147,9 +160,42 @@ fun MapScreen(
             )
 
             @Suppress("DEPRECATION")
-            LaunchedEffect(heatmapState.beacons, heatmapState.showHeatmap, heatmapState.activeFilter) {
+            LaunchedEffect(
+                heatmapState.beacons, heatmapState.showHeatmap, heatmapState.activeFilter,
+                routingState.routePoints, routingState.origin, routingState.destination
+            ) {
                 val map = mapLibreMap ?: return@LaunchedEffect
-                map.removeAnnotations()
+                val origin = routingState.origin
+                val dest = routingState.destination
+                val routePoints = routingState.routePoints
+
+                map.clear()
+
+                if (origin != null) {
+                    map.addMarker(
+                        org.maplibre.android.annotations.MarkerOptions()
+                            .position(LatLng(origin.first, origin.second))
+                            .title("Origin")
+                            .snippet("Start point")
+                    )
+                }
+                if (dest != null) {
+                    map.addMarker(
+                        org.maplibre.android.annotations.MarkerOptions()
+                            .position(LatLng(dest.first, dest.second))
+                            .title("Destination")
+                            .snippet("End point")
+                    )
+                }
+                if (routePoints.isNotEmpty()) {
+                    val latLngs = routePoints.map { LatLng(it.first, it.second) }
+                    map.addPolyline(
+                        org.maplibre.android.annotations.PolylineOptions()
+                            .addAll(latLngs)
+                            .color(android.graphics.Color.parseColor("#1A3A5C"))
+                            .width(5f)
+                    )
+                }
 
                 if (!heatmapState.showHeatmap) return@LaunchedEffect
 
@@ -205,7 +251,7 @@ fun MapScreen(
             Column(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(8.dp),
+                    .padding(8.dp, 8.dp, 8.dp, 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 FloatingActionButton(
@@ -224,6 +270,18 @@ fun MapScreen(
                     Icon(Icons.Default.MyLocation, "Legend", tint = Color.White, modifier = Modifier.size(20.dp))
                 }
 
+                FloatingActionButton(
+                    onClick = { routingViewModel.toggleRouting() },
+                    modifier = Modifier.size(40.dp),
+                    containerColor = if (routingState.enabled) Color(0xFF1A3A5C) else Color.Gray
+                ) {
+                    Text(
+                        "R",
+                        color = Color.White,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
             }
 
             if (heatmapState.showLegend) {
@@ -278,6 +336,65 @@ fun MapScreen(
                             TextButton(onClick = { heatmapViewModel.setFilter(null) }) {
                                 Text("Clear filter")
                             }
+                        }
+                    }
+                }
+            }
+
+            if (routingState.enabled) {
+                Card(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(8.dp)
+                        .fillMaxWidth(0.6f),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ) {
+                    Column(Modifier.padding(8.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Routing", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFF1A3A5C))
+                            IconButton(onClick = { routingViewModel.disableRouting() }) {
+                                Icon(Icons.Default.Close, "Close routing", modifier = Modifier.size(16.dp))
+                            }
+                        }
+                        when {
+                            routingState.origin == null -> Text("Tap map to set origin", fontSize = 12.sp, color = Color(0xFF49454F))
+                            routingState.destination == null -> Text("Origin set. Tap to set destination.", fontSize = 12.sp, color = Color(0xFF49454F))
+                            routingState.routePoints.isNotEmpty() -> Text(
+                                "${formatDistance(routingState.distanceMeters)} | ${formatTime(routingState.timeMillis)}",
+                                fontSize = 12.sp, color = Color(0xFF1A3A5C)
+                            )
+                            else -> Text("Both points set. Calculate route.", fontSize = 12.sp, color = Color(0xFF49454F))
+                        }
+                        if (routingState.origin != null && routingState.destination != null && routingState.routePoints.isEmpty()) {
+                            Spacer(Modifier.height(4.dp))
+                            Button(
+                                onClick = { routingViewModel.calculateRoute() },
+                                enabled = !routingState.isCalculating,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(if (routingState.isCalculating) "Calculating..." else "Calculate Route", fontSize = 12.sp)
+                            }
+                        }
+                        if (routingState.routePoints.isNotEmpty()) {
+                            Spacer(Modifier.height(4.dp))
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Button(onClick = { routingViewModel.calculateRoute() }, modifier = Modifier.weight(1f)) {
+                                    Text("Recalculate", fontSize = 12.sp)
+                                }
+                                Spacer(Modifier.width(4.dp))
+                                Button(onClick = { routingViewModel.clearRoute() }, modifier = Modifier.weight(1f)) {
+                                    Text("Clear", fontSize = 12.sp)
+                                }
+                            }
+                        }
+                        if (routingState.error != null) {
+                            Spacer(Modifier.height(4.dp))
+                            Text(routingState.error!!, fontSize = 11.sp, color = Color(0xFFB00020))
                         }
                     }
                 }
@@ -393,6 +510,17 @@ private fun readMbtilesCenter(mbtilesPath: String): Triple<Double, Double, Doubl
         cursor?.close()
         db?.close()
     }
+}
+
+private fun formatDistance(meters: Double): String {
+    return if (meters >= 1000) "${"%.1f".format(meters / 1000)} km" else "${meters.toInt()} m"
+}
+
+private fun formatTime(millis: Long): String {
+    val totalSec = millis / 1000
+    val h = totalSec / 3600
+    val m = (totalSec % 3600) / 60
+    return if (h > 0) "${h}h ${m}min" else "${m}min"
 }
 
 private fun buildOfflineStyle(mbtilesPath: String): String {

@@ -25,7 +25,8 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun SettingsScreen(
     onNavigateToDownloadMaps: () -> Unit,
-    onNavigateToBackup: () -> Unit
+    onNavigateToBackup: () -> Unit,
+    onNavigateToDownloadRouting: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -54,6 +55,11 @@ fun SettingsScreen(
                 title = "Download Maps",
                 subtitle = "Download offline map regions",
                 onClick = onNavigateToDownloadMaps
+            )
+            SettingsItem(
+                title = "Download Routing Data",
+                subtitle = "Download offline routing data for navigation",
+                onClick = onNavigateToDownloadRouting
             )
             SettingsItem(
                 title = "Backup & Restore",

@@ -1,5 +1,6 @@
 package com.staticquo.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,10 +10,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,7 +23,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -65,26 +70,111 @@ fun DownloadMapsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-            if (state.availableRegions.isEmpty() && state.downloadedRegions.isEmpty() && !state.isLoading) {
-                Column(
+            Text(
+                text = "Custom Region",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1A3A5C)
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = state.locationQuery,
+                    onValueChange = { viewModel.updateLocationQuery(it) },
+                    label = { Text("Search location") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    enabled = !state.isDownloading
+                )
+                Spacer(Modifier.width(8.dp))
+                IconButton(
+                    onClick = { viewModel.searchLocation() },
+                    enabled = state.locationQuery.isNotBlank() && !state.isDownloading
+                ) {
+                    Icon(Icons.Default.Search, "Search")
+                }
+            }
+
+            if (state.isSearching) {
+                CircularProgressIndicator(modifier = Modifier.padding(8.dp))
+            }
+
+            state.locationResults.forEach { result ->
+                Text(
+                    text = result.displayName.take(100),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 64.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                        .clickable { viewModel.selectLocation(result) }
+                        .padding(vertical = 6.dp, horizontal = 4.dp),
+                    fontSize = 13.sp,
+                    color = Color(0xFF1C1B1F)
+                )
+                HorizontalDivider()
+            }
+
+            if (state.selectedLocation != null) {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    text = "Zoom Levels",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF1A3A5C)
+                )
+                Text("Min: ${state.minZoom}  Max: ${state.maxZoom}", fontSize = 13.sp)
+                Spacer(Modifier.height(4.dp))
+                Slider(
+                    value = state.minZoom.toFloat(),
+                    onValueChange = { viewModel.setMinZoom(it.toInt()) },
+                    valueRange = 5f..state.maxZoom.toFloat(),
+                    steps = state.maxZoom - 5 - 1,
+                    enabled = !state.isDownloading,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Slider(
+                    value = state.maxZoom.toFloat(),
+                    onValueChange = { viewModel.setMaxZoom(it.toInt()) },
+                    valueRange = state.minZoom.toFloat()..18f,
+                    steps = 18 - state.minZoom - 1,
+                    enabled = !state.isDownloading,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                if (state.estimatedTiles > 0) {
                     Text(
-                        text = "No map regions available",
-                        fontSize = 16.sp,
+                        text = "Estimated tiles: ${state.estimatedTiles}",
+                        fontSize = 13.sp,
                         color = Color(0xFF49454F)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    val estMb = state.estimatedTiles * 15 / 1000
                     Text(
-                        text = "Create a GitHub Release with tag 'tiles-v1'\ncontaining a .mbtiles file to add regions.",
+                        text = "Estimated size: ~${estMb} MB (15 KB/tile)",
+                        fontSize = 13.sp,
+                        color = Color(0xFF49454F)
+                    )
+                }
+
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = { viewModel.downloadCustomRegion() },
+                    enabled = !state.isDownloading && state.estimatedTiles > 0 && state.estimatedTiles < 50000
+                ) {
+                    Text("Download Custom Region")
+                }
+                if (state.estimatedTiles >= 50000) {
+                    Text(
+                        text = "Too many tiles (${
+                            String.format("%,d", state.estimatedTiles)
+                        }). Reduce zoom range or select a smaller area.",
                         fontSize = 12.sp,
-                        color = Color(0xFF49454F).copy(alpha = 0.7f)
+                        color = Color(0xFFB00020)
                     )
                 }
             }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
             if (state.downloadedRegions.isNotEmpty()) {
                 Text(
@@ -122,14 +212,35 @@ fun DownloadMapsScreen(
                 }
             }
 
+            if (state.availableRegions.isEmpty() && state.downloadedRegions.isEmpty() && state.selectedLocation == null && !state.isLoading && !state.isSearching) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "No map regions available",
+                        fontSize = 16.sp,
+                        color = Color(0xFF49454F)
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = "Search for a location above, or\ncreate a GitHub Release with tag 'tiles-v1'.",
+                        fontSize = 12.sp,
+                        color = Color(0xFF49454F).copy(alpha = 0.7f)
+                    )
+                }
+            }
+
             if (state.isDownloading) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(Modifier.height(16.dp))
                 Text(
                     text = state.downloadProgressText,
                     fontSize = 14.sp,
                     color = Color(0xFF1A3A5C)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(Modifier.height(8.dp))
                 LinearProgressIndicator(
                     progress = { state.downloadProgress },
                     modifier = Modifier.fillMaxWidth()
@@ -137,7 +248,7 @@ fun DownloadMapsScreen(
             }
 
             if (state.error != null) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(Modifier.height(16.dp))
                 Text(
                     text = state.error!!,
                     fontSize = 14.sp,
@@ -146,7 +257,7 @@ fun DownloadMapsScreen(
             }
 
             if (state.successMessage != null) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(Modifier.height(16.dp))
                 Text(
                     text = state.successMessage!!,
                     fontSize = 14.sp,

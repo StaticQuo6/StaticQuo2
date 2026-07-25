@@ -50,6 +50,7 @@ class SearchRepository @Inject constructor(
                         SearchResultItem(
                             title = it.title,
                             snippet = generateSnippet(it.content, query),
+                            content = it.content,
                             sourceFile = it.sourceFile
                         )
                     }
@@ -83,5 +84,6 @@ class SearchRepository @Inject constructor(
 data class SearchResultItem(
     val title: String,
     val snippet: String,
+    val content: String,
     val sourceFile: String
 )

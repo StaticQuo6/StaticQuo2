@@ -2,8 +2,17 @@
 
 ## Offline Routing
 
-**Status:** Deferred
+**Status:** Implemented with GraphHopper 11.0 (pure Java — no Kotlin metadata version conflict)
 
-**Reason:** The `valhalla-mobile:0.5.1` dependency was compiled with Kotlin 2.3.0 and is incompatible with this project's Kotlin 2.0.21 toolchain. The dependency and all routing-specific code (`RoutingRepository`, `RoutingViewModel`, `RoutingRegionEntity`, `DownloadRoutingScreen`) have been removed to restore the build.
+**Implementation:**
+- `GraphHopperEngine.kt` — wraps `GraphHopper` for loading pre-built graph directories and calculating routes
+- `RoutingRepository.kt` — downloads graph zip files from GitHub releases, extracts and manages routing regions
+- `RoutingViewModel.kt` / `RoutingDao.kt` / `RoutingRegionEntity.kt` — standard Room-backed CRUD for routing data
+- `DownloadRoutingScreen.kt` — download/remove routing regions
+- `MapScreen.kt` — routing mode toggle (FAB "R"), tap-to-set origin/destination, route polyline overlay, info card with distance/time
 
-**Plan:** Reintroduce offline routing as an isolated feature task, evaluating either an older `valhalla-mobile` version compiled against Kotlin 2.0.x or a different routing library entirely.
+**How to use:**
+1. Create a GitHub Release with tag `graph-v1` containing a `.zip` file with pre-built GraphHopper graph directory
+2. In Settings → Download Routing Data, download the region
+3. On the Map screen, tap the "R" FAB to enter routing mode
+4. Tap map to set origin, tap again to set destination, then tap "Calculate Route"

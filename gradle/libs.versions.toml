@@ -12,6 +12,7 @@ coreKtx = "1.13.1"
 navigationCompose = "2.8.0"
 argon2kt = "1.5.0"
 tink = "1.15.0"
+graphhopper = "11.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -55,8 +56,11 @@ maplibre-sdk = { group = "org.maplibre.gl", name = "android-sdk", version = "11.
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version = "21.3.0" }
 
 # HTTP
-okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version = "4.12.0" }
-okio = { group = "com.squareup.okio", name = "okio", version = "3.9.0" }
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+okio = { group = "com.squareup.okio", name = "okio", version.ref = "okio" }
+
+# GraphHopper offline routing
+graphhopper-core = { group = "com.graphhopper", name = "graphhopper-core", version.ref = "graphhopper" }
 
 # Coroutines Play Services (for Task.await())
 coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version = "1.8.1" }

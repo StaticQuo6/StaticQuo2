@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.staticquo.data.db.AppDatabase
 import com.staticquo.data.db.AppLockDao
 import com.staticquo.data.db.MapRegionDao
+import com.staticquo.data.db.RoutingDao
 import com.staticquo.data.db.VaultEntryDao
 import com.staticquo.heatmap.HeatmapDao
 import com.staticquo.search.SearchDao
@@ -42,4 +43,7 @@ object DatabaseModule {
 
     @Provides
     fun provideSearchDao(db: AppDatabase): SearchDao = db.searchDao()
+
+    @Provides
+    fun provideRoutingDao(db: AppDatabase): RoutingDao = db.routingDao()
 }

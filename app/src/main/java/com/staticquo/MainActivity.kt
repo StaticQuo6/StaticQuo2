@@ -34,6 +34,7 @@ import com.staticquo.lora.LoRaScreen
 import com.staticquo.maps.MapScreen
 import com.staticquo.search.SearchScreen
 import com.staticquo.backup.BackupScreen
+import com.staticquo.routing.DownloadRoutingScreen
 import com.staticquo.settings.DownloadMapsScreen
 import com.staticquo.settings.SettingsScreen
 import com.staticquo.vault.VaultScreen
@@ -71,6 +72,7 @@ private fun MainNavigation() {
     var selectedTab by rememberSaveable { mutableStateOf(0) }
     var showDownloadMaps by rememberSaveable { mutableStateOf(false) }
     var showBackup by rememberSaveable { mutableStateOf(false) }
+    var showDownloadRouting by rememberSaveable { mutableStateOf(false) }
 
     if (showDownloadMaps) {
         DownloadMapsScreen(onBack = { showDownloadMaps = false })
@@ -79,6 +81,11 @@ private fun MainNavigation() {
 
     if (showBackup) {
         BackupScreen(onBack = { showBackup = false })
+        return
+    }
+
+    if (showDownloadRouting) {
+        DownloadRoutingScreen(onBack = { showDownloadRouting = false })
         return
     }
 
@@ -126,7 +133,8 @@ private fun MainNavigation() {
                     4 -> SearchScreen()
                     5 -> SettingsScreen(
                         onNavigateToDownloadMaps = { showDownloadMaps = true },
-                        onNavigateToBackup = { showBackup = true }
+                        onNavigateToBackup = { showBackup = true },
+                        onNavigateToDownloadRouting = { showDownloadRouting = true }
                     )
                 }
         }

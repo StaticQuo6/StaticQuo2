@@ -107,6 +107,9 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okio)
 
+    // GraphHopper
+    implementation(libs.graphhopper.core)
+
     // Coroutines Play Services
     implementation(libs.coroutines.play.services)
 }

@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.filled.Close
@@ -180,7 +182,16 @@ private fun ResultDialog(
             }
         },
         text = {
-            Text(result.snippet, style = MaterialTheme.typography.bodyMedium)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Text(
+                    text = result.content,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         },
         confirmButton = {
             TextButton(onClick = onDismiss) { Text("Close") }

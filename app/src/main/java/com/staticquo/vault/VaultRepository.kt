@@ -73,6 +73,41 @@ class VaultRepository @Inject constructor(
         }
     }
 
+    suspend fun createEntry(title: String, contentType: String, data: ByteArray): VaultResult<Long> {
+        return try {
+            val dir = vaultDir()
+            dir.mkdirs()
+
+            val entity = VaultEntryEntity(
+                title = title,
+                contentType = contentType,
+                encryptedFilePath = "",
+                sizeBytes = 0
+            )
+            val id = dao.insert(entity)
+            val targetFile = File(dir, "$id.enc")
+
+            when (val encryptionResult = encryption.encryptToFile(data, targetFile)) {
+                is VaultEncryptionResult.Success -> {
+                    val updated = entity.copy(
+                        id = id,
+                        encryptedFilePath = targetFile.absolutePath,
+                        sizeBytes = encryptionResult.data
+                    )
+                    dao.insert(updated)
+                    VaultResult.Success(id)
+                }
+                is VaultEncryptionResult.Error -> {
+                    dao.delete(id)
+                    targetFile.delete()
+                    VaultResult.Error(encryptionResult.message)
+                }
+            }
+        } catch (e: Exception) {
+            VaultResult.Error("Failed to create entry: ${e.message}")
+        }
+    }
+
     suspend fun createNote(title: String, plaintext: String): VaultResult<Long> {
         return try {
             val dir = vaultDir()

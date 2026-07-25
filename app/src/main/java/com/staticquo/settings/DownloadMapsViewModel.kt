@@ -7,11 +7,14 @@ import com.staticquo.data.db.MapRegionEntity
 import com.staticquo.maps.MapRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
+import java.net.URL
 import javax.inject.Inject
 
 data class DownloadMapsUiState(
@@ -22,7 +25,21 @@ data class DownloadMapsUiState(
     val downloadProgress: Float = 0f,
     val downloadProgressText: String = "",
     val error: String? = null,
-    val successMessage: String? = null
+    val successMessage: String? = null,
+    val locationQuery: String = "",
+    val locationResults: List<GeocodingResult> = emptyList(),
+    val isSearching: Boolean = false,
+    val selectedLocation: GeocodingResult? = null,
+    val minZoom: Int = 10,
+    val maxZoom: Int = 14,
+    val estimatedTiles: Long = 0
+)
+
+data class GeocodingResult(
+    val displayName: String,
+    val lat: Double,
+    val lon: Double,
+    val boundingBox: List<Double>?
 )
 
 @HiltViewModel
@@ -40,7 +57,7 @@ class DownloadMapsViewModel @Inject constructor(
 
     fun refresh() {
         viewModelScope.launch {
-            _uiState.value = DownloadMapsUiState(isLoading = true)
+            _uiState.value = DownloadMapsUiState()
             try {
                 val available = mapRepository.fetchAvailableRegions()
                 val downloaded = mapRepository.getDownloadedRegions()
@@ -51,6 +68,134 @@ class DownloadMapsViewModel @Inject constructor(
             } catch (e: Exception) {
                 _uiState.value = DownloadMapsUiState(
                     error = "Failed to load regions: ${e.message}"
+                )
+            }
+        }
+    }
+
+    fun updateLocationQuery(query: String) {
+        _uiState.value = _uiState.value.copy(locationQuery = query, selectedLocation = null)
+    }
+
+    fun searchLocation() {
+        val query = _uiState.value.locationQuery.trim()
+        if (query.isBlank()) return
+
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isSearching = true, error = null)
+            try {
+                val results = withContext(Dispatchers.IO) { geocode(query) }
+                _uiState.value = _uiState.value.copy(
+                    isSearching = false,
+                    locationResults = results
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isSearching = false,
+                    error = "Search failed: ${e.message}"
+                )
+            }
+        }
+    }
+
+    fun selectLocation(result: GeocodingResult) {
+        _uiState.value = _uiState.value.copy(
+            selectedLocation = result,
+            locationResults = emptyList(),
+            locationQuery = result.displayName
+        )
+        recalcEstimate()
+    }
+
+    fun setMinZoom(z: Int) {
+        _uiState.value = _uiState.value.copy(minZoom = z.coerceIn(5, _uiState.value.maxZoom))
+        recalcEstimate()
+    }
+
+    fun setMaxZoom(z: Int) {
+        _uiState.value = _uiState.value.copy(maxZoom = z.coerceIn(_uiState.value.minZoom, 18))
+        recalcEstimate()
+    }
+
+    private fun recalcEstimate() {
+        val sel = _uiState.value.selectedLocation ?: return
+        val bb = sel.boundingBox
+        val zooms = _uiState.value.minZoom.._uiState.value.maxZoom
+        var count = 0L
+        for (z in zooms) {
+            if (bb != null && bb.size >= 4) {
+                val (minT, maxT) = TileMath.tileBounds(bb[1], bb[3], bb[0], bb[2], z)
+                count += (maxT.x - minT.x + 1).toLong() * (maxT.y - minT.y + 1).toLong()
+            }
+        }
+        _uiState.value = _uiState.value.copy(estimatedTiles = count)
+    }
+
+    fun downloadCustomRegion() {
+        val sel = _uiState.value.selectedLocation ?: return
+        val bb = sel.boundingBox ?: return
+        if (bb.size < 4) return
+
+        viewModelScope.launch {
+            val regionId = "custom-${sel.lat}-${sel.lon}".replace(".", "_")
+            val sanName = sel.displayName.take(80)
+            _uiState.value = _uiState.value.copy(
+                isDownloading = true,
+                downloadProgress = 0f,
+                downloadProgressText = "Starting download...",
+                error = null,
+                successMessage = null
+            )
+
+            try {
+                val regionsDir = File(context.filesDir, "maps")
+                regionsDir.mkdirs()
+                val outputFile = File(regionsDir, "$regionId.mbtiles")
+
+                val builder = MbtilesBuilder()
+                val result = withContext(Dispatchers.IO) {
+                    builder.build(
+                        outputFile = outputFile,
+                        south = bb[1], north = bb[3],
+                        west = bb[0], east = bb[2],
+                        minZoom = _uiState.value.minZoom,
+                        maxZoom = _uiState.value.maxZoom,
+                        regionName = sanName
+                    ) { progress ->
+                        _uiState.value = _uiState.value.copy(
+                            downloadProgress = progress.percentage,
+                            downloadProgressText = progress.message
+                        )
+                    }
+                }
+
+                result.fold(
+                    onSuccess = { file ->
+                        mapRepository.saveRegion(
+                            id = regionId,
+                            name = sanName,
+                            filePath = file.absolutePath,
+                            sizeBytes = file.length(),
+                            version = "1.0.0"
+                        )
+                        _uiState.value = _uiState.value.copy(
+                            isDownloading = false,
+                            downloadProgress = 1f,
+                            successMessage = "Custom region downloaded (${(file.length() / 1_000_000)} MB)"
+                        )
+                        refresh()
+                    },
+                    onFailure = { e ->
+                        _uiState.value = _uiState.value.copy(
+                            isDownloading = false,
+                            error = "Download failed: ${e.message}"
+                        )
+                    }
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isDownloading = false,
+                    error = "Download failed: ${e.message}"
                 )
             }
         }
@@ -100,5 +245,30 @@ class DownloadMapsViewModel @Inject constructor(
             mapRepository.removeRegion(region.id, File(region.mbtilesPath))
             refresh()
         }
+    }
+
+    private fun geocode(query: String): List<GeocodingResult> {
+        val url = URL("https://nominatim.openstreetmap.org/search?q=${java.net.URLEncoder.encode(query, "UTF-8")}&format=json&limit=5")
+        val jsonText = url.readText()
+        val arr = org.json.JSONArray(jsonText)
+        val results = mutableListOf<GeocodingResult>()
+        for (i in 0 until arr.length()) {
+            val obj = arr.getJSONObject(i)
+            val lat = obj.getDouble("lat")
+            val lon = obj.getDouble("lon")
+            val bbArr = obj.optJSONArray("boundingbox")
+            val bb = if (bbArr != null && bbArr.length() >= 4) {
+                listOf(bbArr.getDouble(2), bbArr.getDouble(0), bbArr.getDouble(3), bbArr.getDouble(1))
+            } else null
+            results.add(
+                GeocodingResult(
+                    displayName = obj.optString("display_name", ""),
+                    lat = lat,
+                    lon = lon,
+                    boundingBox = bb
+                )
+            )
+        }
+        return results
     }
 }

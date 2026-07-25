@@ -19,8 +19,9 @@ import javax.inject.Singleton
         HeatmapEntity::class,
         SearchDocument::class,
         SearchIndexFts::class,
+        RoutingRegionEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -30,6 +31,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun vaultEntryDao(): VaultEntryDao
     abstract fun heatmapDao(): HeatmapDao
     abstract fun searchDao(): SearchDao
+    abstract fun routingDao(): RoutingDao
 
     companion object {
         const val DB_NAME = "staticquo.db"
