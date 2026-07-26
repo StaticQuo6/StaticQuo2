@@ -125,20 +125,8 @@ fun MapScreen(
         } else {
             var mapView by remember { mutableStateOf<MapView?>(null) }
             var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
-            var mapInitError by remember { mutableStateOf<String?>(null) }
 
-            if (mapInitError != null) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text("Map data unavailable", color = Color(0xFF1A3A5C), modifier = Modifier.padding(bottom = 8.dp))
-                    Text("Please re-download the region in Settings.", color = Color(0xFF1A3A5C).copy(alpha = 0.7f), modifier = Modifier.padding(bottom = 16.dp))
-                    Button(onClick = { mapInitError = null; mapViewModel.refreshRegion() }) { Text("Retry") }
-                }
-            } else {
-                AndroidView(
+            AndroidView(
                     factory = { ctx ->
                         try {
                             MapLibre.getInstance(ctx)
@@ -150,23 +138,18 @@ fun MapScreen(
                             mapView = mv
                             mv.getMapAsync { map ->
                                 val styleJson = buildOfflineStyle(mbtilesFile.absolutePath)
-                                try {
-                                    map.setStyle(Style.Builder().fromJson(styleJson)) {
-                                        val camera = readMbtilesCenter(mbtilesFile.absolutePath)
-                                        if (camera != null) {
-                                            map.moveCamera(
-                                                CameraUpdateFactory.newCameraPosition(
-                                                    CameraPosition.Builder()
-                                                        .target(LatLng(camera.first, camera.second))
-                                                        .zoom(camera.third)
-                                                        .build()
-                                                )
+                                map.setStyle(Style.Builder().fromJson(styleJson)) {
+                                    val camera = readMbtilesCenter(mbtilesFile.absolutePath)
+                                    if (camera != null) {
+                                        map.moveCamera(
+                                            CameraUpdateFactory.newCameraPosition(
+                                                CameraPosition.Builder()
+                                                    .target(LatLng(camera.first, camera.second))
+                                                    .zoom(camera.third)
+                                                    .build()
                                             )
-                                        }
+                                        )
                                     }
-                                } catch (e: Exception) {
-                                    Log.e("StaticQuoMap", "Style load failed", e)
-                                    mapInitError = e.message
                                 }
                                 mapLibreMap = map
 
