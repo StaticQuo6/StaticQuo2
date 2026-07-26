@@ -45,13 +45,18 @@ class VaultViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(VaultUiState())
     val uiState: StateFlow<VaultUiState> = _uiState.asStateFlow()
 
-    init {
+    fun lock() {
+        _uiState.value = _uiState.value.copy(lockScreen = VaultLockScreen.LOADING)
         viewModelScope.launch {
             val isSet = vaultPinRepository.isPinSet()
             _uiState.value = _uiState.value.copy(
                 lockScreen = if (isSet) VaultLockScreen.UNLOCK else VaultLockScreen.SET_PIN
             )
         }
+    }
+
+    init {
+        lock()
     }
 
     fun onPinDigit(digit: Char) {

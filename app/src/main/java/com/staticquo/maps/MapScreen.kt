@@ -49,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -56,8 +57,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
+import java.io.FileWriter
 import com.staticquo.heatmap.BeaconType
 import com.staticquo.heatmap.HeatmapViewModel
 import com.staticquo.routing.RoutingViewModel
@@ -96,9 +99,12 @@ fun MapScreen(
     val hasTiles = mbtilesFile?.exists() == true
     val mbtilesValid = hasTiles && isValidMbtiles(mbtilesFile!!)
 
+    val ctx = LocalContext.current
     if (mbtilesFile != null && hasTiles) {
         Log.d("StaticQuoMap", "mbtiles path: ${mbtilesFile.absolutePath}")
         Log.d("StaticQuoMap", "mbtiles exists: $hasTiles, valid: $mbtilesValid")
+        diagnosticLog(ctx, "mbtiles path: ${mbtilesFile.absolutePath}")
+        diagnosticLog(ctx, "mbtiles exists: $hasTiles, valid: $mbtilesValid")
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -137,10 +143,18 @@ fun MapScreen(
                             mv.onCreate(null)
                             mapView = mv
                             mv.getMapAsync { map ->
-                                val styleJson = buildOfflineStyle(mbtilesFile.absolutePath)
+                                val mbtilesPath = mbtilesFile.absolutePath
+                                val styleJson = buildOfflineStyle(mbtilesPath)
+                                diagnosticLog(ctx, "--- style JSON ---")
+                                diagnosticLog(ctx, styleJson)
+                                diagnosticLog(ctx, "--- end style JSON ---")
+                                map.addOnDidFailLoadingMapListener { errorMessage ->
+                                    diagnosticLog(ctx, "MAP LOAD ERROR: $errorMessage")
+                                }
                                 map.setStyle(Style.Builder().fromJson(styleJson)) {
-                                    val camera = readMbtilesCenter(mbtilesFile.absolutePath)
+                                    val camera = readMbtilesCenter(mbtilesPath)
                                     if (camera != null) {
+                                        diagnosticLog(ctx, "setting camera: lat=${camera.first} lng=${camera.second} zoom=${camera.third}")
                                         map.moveCamera(
                                             CameraUpdateFactory.newCameraPosition(
                                                 CameraPosition.Builder()
@@ -150,6 +164,8 @@ fun MapScreen(
                                             )
                                         )
                                     }
+                                    val actualZoom = map.cameraPosition.zoom
+                                    diagnosticLog(ctx, "map rendered, camera zoom: $actualZoom")
                                 }
                                 mapLibreMap = map
 
@@ -540,6 +556,14 @@ private fun formatTime(millis: Long): String {
     return if (h > 0) "${h}h ${m}min" else "${m}min"
 }
 
+private fun diagnosticLog(context: Context, message: String) {
+    try {
+        val dir = context.getExternalFilesDir(null) ?: return
+        val file = File(dir, "map_debug.log")
+        FileWriter(file, true).use { it.appendLine("[${java.text.SimpleDateFormat("HH:mm:ss.SSS", java.util.Locale.US).format(java.util.Date())}] $message") }
+    } catch (_: Exception) {}
+}
+
 private fun buildOfflineStyle(mbtilesPath: String): String {
     return """{
         "version": 8,
@@ -548,14 +572,18 @@ private fun buildOfflineStyle(mbtilesPath: String): String {
             "offline": {
                 "type": "raster",
                 "url": "mbtiles://$mbtilesPath",
-                "tileSize": 256
+                "tileSize": 256,
+                "minzoom": 0,
+                "maxzoom": 22
             }
         },
         "layers": [
             {
                 "id": "offline-layer",
                 "type": "raster",
-                "source": "offline"
+                "source": "offline",
+                "minzoom": 0,
+                "maxzoom": 22
             }
         ]
     }"""
