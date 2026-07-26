@@ -142,15 +142,15 @@ fun MapScreen(
                         MapView(ctx).also { mv ->
                             mv.onCreate(null)
                             mapView = mv
+                            mv.addOnDidFailLoadingMapListener { errorMessage ->
+                                diagnosticLog(ctx, "MAP LOAD ERROR: $errorMessage")
+                            }
                             mv.getMapAsync { map ->
                                 val mbtilesPath = mbtilesFile.absolutePath
                                 val styleJson = buildOfflineStyle(mbtilesPath)
                                 diagnosticLog(ctx, "--- style JSON ---")
                                 diagnosticLog(ctx, styleJson)
                                 diagnosticLog(ctx, "--- end style JSON ---")
-                                map.addOnDidFailLoadingMapListener { errorMessage ->
-                                    diagnosticLog(ctx, "MAP LOAD ERROR: $errorMessage")
-                                }
                                 map.setStyle(Style.Builder().fromJson(styleJson)) {
                                     val camera = readMbtilesCenter(mbtilesPath)
                                     if (camera != null) {
