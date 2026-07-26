@@ -122,10 +122,6 @@ class VaultViewModel @Inject constructor(
         }
     }
 
-    fun dismissPinError() {
-        _uiState.value = _uiState.value.copy(pinError = null)
-    }
-
     fun loadEntries() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)

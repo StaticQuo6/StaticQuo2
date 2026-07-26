@@ -57,6 +57,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import android.database.sqlite.SQLiteDatabase
+import android.util.Log
 import com.staticquo.heatmap.BeaconType
 import com.staticquo.heatmap.HeatmapViewModel
 import com.staticquo.routing.RoutingViewModel
@@ -93,50 +94,83 @@ fun MapScreen(
     val region = mapState.activeRegion
     val mbtilesFile = if (region != null) File(region.mbtilesPath) else null
     val hasTiles = mbtilesFile?.exists() == true
+    val mbtilesValid = hasTiles && isValidMbtiles(mbtilesFile!!)
+
+    if (mbtilesFile != null && hasTiles) {
+        Log.d("StaticQuoMap", "mbtiles path: ${mbtilesFile.absolutePath}")
+        Log.d("StaticQuoMap", "mbtiles exists: $hasTiles, valid: $mbtilesValid")
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (!hasTiles) {
+        if (!hasTiles || !mbtilesValid) {
             Column(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text("No map data", color = Color(0xFF1A3A5C), modifier = Modifier.padding(bottom = 8.dp))
-                Text("Open Settings to download a region.", color = Color(0xFF1A3A5C).copy(alpha = 0.7f), modifier = Modifier.padding(bottom = 16.dp))
+                Text(
+                    text = if (mbtilesFile == null || !hasTiles) "No map data"
+                           else "Map data unavailable",
+                    color = Color(0xFF1A3A5C),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Text(
+                    text = if (mbtilesFile == null || !hasTiles) "Open Settings to download a region."
+                           else "Please re-download the region in Settings.",
+                    color = Color(0xFF1A3A5C).copy(alpha = 0.7f),
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
                 Button(onClick = { mapViewModel.refreshRegion() }) { Text("Refresh") }
             }
         } else {
             var mapView by remember { mutableStateOf<MapView?>(null) }
             var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
+            var mapInitError by remember { mutableStateOf<String?>(null) }
 
-            AndroidView(
-                factory = { ctx ->
-                    try {
-                        MapLibre.getInstance(ctx)
-                    } catch (_: Exception) {
-                        MapLibre.getInstance(ctx, "", WellKnownTileServer.MapLibre)
-                    }
-                    MapView(ctx).also { mv ->
-                        mv.onCreate(null)
-                        mapView = mv
-                        mv.getMapAsync { map ->
-                            val styleJson = buildOfflineStyle(mbtilesFile!!.absolutePath)
-                            map.setStyle(Style.Builder().fromJson(styleJson)) {
-                                val camera = mbtilesFile?.let { readMbtilesCenter(it.absolutePath) }
-                                if (camera != null) {
-                                    map.moveCamera(
-                                        CameraUpdateFactory.newCameraPosition(
-                                            CameraPosition.Builder()
-                                                .target(LatLng(camera.first, camera.second))
-                                                .zoom(camera.third)
-                                                .build()
-                                        )
-                                    )
+            if (mapInitError != null) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text("Map data unavailable", color = Color(0xFF1A3A5C), modifier = Modifier.padding(bottom = 8.dp))
+                    Text("Please re-download the region in Settings.", color = Color(0xFF1A3A5C).copy(alpha = 0.7f), modifier = Modifier.padding(bottom = 16.dp))
+                    Button(onClick = { mapInitError = null; mapViewModel.refreshRegion() }) { Text("Retry") }
+                }
+            } else {
+                AndroidView(
+                    factory = { ctx ->
+                        try {
+                            MapLibre.getInstance(ctx)
+                        } catch (_: Exception) {
+                            MapLibre.getInstance(ctx, "", WellKnownTileServer.MapLibre)
+                        }
+                        MapView(ctx).also { mv ->
+                            mv.onCreate(null)
+                            mapView = mv
+                            mv.getMapAsync { map ->
+                                val styleJson = buildOfflineStyle(mbtilesFile.absolutePath)
+                                try {
+                                    map.setStyle(Style.Builder().fromJson(styleJson)) {
+                                        val camera = readMbtilesCenter(mbtilesFile.absolutePath)
+                                        if (camera != null) {
+                                            map.moveCamera(
+                                                CameraUpdateFactory.newCameraPosition(
+                                                    CameraPosition.Builder()
+                                                        .target(LatLng(camera.first, camera.second))
+                                                        .zoom(camera.third)
+                                                        .build()
+                                                )
+                                            )
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e("StaticQuoMap", "Style load failed", e)
+                                    mapInitError = e.message
                                 }
-                            }
-                            mapLibreMap = map
+                                mapLibreMap = map
 
-                            map.addOnMapClickListener { point ->
+                                map.addOnMapClickListener { point ->
                                 if (routingState.enabled) {
                                     if (routingState.origin == null) {
                                         routingViewModel.setOrigin(point.latitude, point.longitude)
@@ -530,10 +564,8 @@ private fun buildOfflineStyle(mbtilesPath: String): String {
         "sources": {
             "offline": {
                 "type": "raster",
-                "tiles": ["mbtiles://$mbtilesPath/{z}/{x}/{y}.png"],
-                "tileSize": 256,
-                "minzoom": 0,
-                "maxzoom": 22
+                "url": "mbtiles://$mbtilesPath",
+                "tileSize": 256
             }
         },
         "layers": [
@@ -544,4 +576,38 @@ private fun buildOfflineStyle(mbtilesPath: String): String {
             }
         ]
     }"""
+}
+
+private fun isValidMbtiles(file: File): Boolean {
+    var db: SQLiteDatabase? = null
+    var cursor: android.database.Cursor? = null
+    try {
+        db = SQLiteDatabase.openDatabase(file.absolutePath, null, SQLiteDatabase.OPEN_READONLY)
+        cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='tiles'", null)
+        if (!cursor.moveToFirst()) {
+            Log.w("StaticQuoMap", "mbtiles missing 'tiles' table: ${file.absolutePath}")
+            return false
+        }
+        cursor.close()
+        cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='metadata'", null)
+        if (!cursor.moveToFirst()) {
+            Log.w("StaticQuoMap", "mbtiles missing 'metadata' table: ${file.absolutePath}")
+            return false
+        }
+        cursor.close()
+        cursor = db.rawQuery("SELECT count(*) FROM tiles", null)
+        cursor.moveToFirst()
+        val tileCount = cursor.getInt(0)
+        if (tileCount == 0) {
+            Log.w("StaticQuoMap", "mbtiles has zero tiles: ${file.absolutePath}")
+            return false
+        }
+        return true
+    } catch (e: Exception) {
+        Log.e("StaticQuoMap", "mbtiles validation failed: ${file.absolutePath}", e)
+        return false
+    } finally {
+        cursor?.close()
+        db?.close()
+    }
 }
