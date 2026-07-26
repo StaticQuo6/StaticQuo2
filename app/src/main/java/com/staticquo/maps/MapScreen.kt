@@ -533,7 +533,7 @@ private fun readMbtilesCenter(mbtilesPath: String): Triple<Double, Double, Doubl
         if (cursor.moveToFirst()) {
             val parts = cursor.getString(0).split(",")
             if (parts.size >= 3) {
-                return Triple(parts[0].toDouble(), parts[1].toDouble(), parts[2].toDouble())
+                return Triple(parts[1].toDouble(), parts[0].toDouble(), parts[2].toDouble())
             }
         }
         return null
